@@ -1,0 +1,28 @@
+@startuml
+actor Main
+participant Executor
+participant Hello
+
+Main -> Executor : new(activity_chain)
+Main -> Hello : create Hello instance
+Main -> World : create World instance
+Main -> Executor : register(Hello)
+Main -> Executor : register(World)
+Main -> Executor : execute_all()
+Executor -> Hello : init()
+Hello -> Hello : "Initializing..."
+Executor -> World : init()
+World -> World : "Initializing..."
+loop execute multiple times
+    Executor -> Hello : step()
+    Hello -> Hello : "Hello..."
+    Executor -> World : step()
+    World -> World : "World..."
+end loop
+Executor -> Hello : shutdown()
+Hello -> Hello : "Shutting down..."
+Executor -> World : shutdown()
+World -> World : "Shutting down..."
+
+@enduml
+
