@@ -1,13 +1,26 @@
 @startuml
+
+component "Agent" {
+
+    interface Agent {
+        + register(Activity)
+    }
+
+    interface InternalAgent {
+        + execute_command(command_type, variant<void, activity_id>>)
+    }
+
+    InternalAgent -[hidden]-> Agent
+}
+
 component "Executor" {
    interface Executor {
         + new(activity_chain)
-        + register(Activity)
-        + execute()
+        + execute_chain()
     }
 }
 
-    note right of Executor
+    note left of Executor
         Activity Chain for this example is Hello -> World
     end note
 
@@ -27,7 +40,9 @@ component "World" {
 }
 
 
-Executor o-- Activity : "manages"
+Agent <-up-> Executor: "commands exchange"
+
+Agent o-- Activity : "manages"
 Activity <|.. Hello : "implements"
 Activity <|.. World : "implements"
 
