@@ -30,7 +30,6 @@ Config file schema
   events: 3 Define events if needed
     event1: &event1_label
 
-  # Each flow is a Tree !
   # We assume that each flow is executed as a loop, running sequentially from the top to the bottom, unless it is shut down.
   flows: 
     flow_name1: # Flow declaration
