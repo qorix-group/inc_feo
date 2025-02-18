@@ -18,67 +18,16 @@ Config file schema
       whatever_property: 1 # Example how additional properties for the activities can be provided later on
     RunConcurrent1: &RunConcurrent1_label
       prop1: 2
+      depends_on: # List of dependencies
+        - *GetData_label
     RunConcurrent2: &RunConcurrent2_label
       prop1: 1
+      depends_on:
+        - *RunConcurrent2_label
     RunSync: &RunSync_label
       prop1: 3
-
-  state: # Define any states needed for the switch action
-    state1: &state1_label
-      intitial_value: 1
-
-  events: 3 Define events if needed
-    event1: &event1_label
-
-  # We assume that each flow is executed as a loop, running sequentially from the top to the bottom, unless it is shut down.
-  flows: 
-    flow_name1: # Flow declaration
-      some_other_prop: whatever # Example how any new properties can be added to flow later
-      actions: 
-        - class: execute
-          activity: *GetData_label
-        - class: concurrent
-          actions:
-            - class: execute
-              activity: *RunConcurrent1_label
-            - class: execute
-              activity: *RunConcurrent2_label
-            - class: sequence
-              actions:
-                - class: execute
-                  activity: *RunConcurrent1_label
-                - class: execute
-                  activity: *RunConcurrent2_label
-                - class: trigger
-                  event: *event1_label
-        - class: execute
-          activity: *RunSync_label
-        - class: switch
-          state: *state1_label
-          default_action: # optional
-            class: execute
-            activity: *RunConcurrent2_label
-          cases:
-            - state_value: 0
-              action:
-                class: sequence
-                actions:
-                  - class: execute
-                    activity: *RunConcurrent2_label
-            - state_value: 2
-              action:
-                class: execute
-                activity: *RunConcurrent2_label
-
-    ## Included here for now to help understand what kinds of flow items are available.
-    documentation_node:
-      class:
-        - sequence # organize activities to be called one after another
-        - execute # activity execution, in particular calling Step()
-        - concurrent # organize activities to be called concurrently
-        - switch # execute activities based on a state
-        - synchronize # wait for an event to continue
-        - trigger # trigger and event
+      depends_on:
+        - *RunSync_label
 
 
 Example
@@ -98,12 +47,26 @@ Config
 	activities: # Define activities in the application
       Activity1: &Activity1_label
       Activity2: &Activity2_label
+        depends_on:
+          - *Activity1_label
       Activity3: &Activity3_label
+        depends_on:
+          - *Activity1_label
       Activity4: &Activity4_label
+        depends_on:
+          - *Activity2_label
       Activity5: &Activity5_label
+        depends_on:
+          - *Activity3_label
       Activity6: &Activity6_label
+        depends_on:
+          - *Activity5_label
       Activity7: &Activity7_label
+        depends_on:
+          - *Activity5_label
       Activity8: &Activity8_label
+        depends_on:
+          - *Activity5_label
     flows: 
       app_flow:
         actions: # PICTURE_1_TAG
@@ -132,10 +95,3 @@ Config
                        - class: execute
                         activity: *Activity8_label
 
-
-To be done
------------
-When conclusion is reached, still to be done:
-
-- schema (for sake of correct understanding in future)
-- additional docs for config fields/sections
