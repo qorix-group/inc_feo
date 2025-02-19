@@ -35,6 +35,7 @@ rust_binary(
         "//feo-logger:libfeo_logger_rust",
         "//feo-time:libfeo_time_rust",
         "//feo-tracing:libfeo_tracing_rust",
+        "//qor-rto:libqor_rto"
     ],
 )
 

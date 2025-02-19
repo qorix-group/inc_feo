@@ -1,0 +1,19 @@
+load("@cargo//:defs.bzl", "all_crate_deps")
+load("@rules_rust//rust:defs.bzl", "rust_library")
+
+rust_library(
+    name = "libqor_rto",
+    srcs = glob([
+        "src/*.rs",
+        "src/actions/*.rs",
+        "src/program/*.rs"
+    ]),
+    crate_name = "qor_rto",
+    visibility = ["//visibility:public"],
+    deps = all_crate_deps(
+        normal = True,
+    ) + [
+        "//qor-os:libqor_os",
+        "//qor-core:libqor_core",
+    ],
+)

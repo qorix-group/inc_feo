@@ -12,6 +12,9 @@ members = [
     "feo-tracing",
     "logd",
     "perfetto-model",
+    "qor-core",
+    "qor-os",
+    "qor-rto",
 ]
 resolver = "2"
 

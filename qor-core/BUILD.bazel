@@ -1,0 +1,16 @@
+load("@cargo//:defs.bzl", "all_crate_deps")
+load("@rules_rust//rust:defs.bzl", "rust_library")
+
+rust_library(
+    name = "libqor_core",
+    srcs = glob([
+        "src/*.rs",
+        "src/types/*.rs",
+    ]),
+    crate_name = "qor_core",
+    visibility = ["//visibility:public"],
+    deps = all_crate_deps(
+        normal = True,
+    ) + [
+    ],
+)
