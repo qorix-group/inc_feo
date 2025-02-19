@@ -45,6 +45,7 @@ crate.from_cargo(
         "//:feo-tracing/Cargo.toml",
         "//:logd/Cargo.toml",
         "//:perfetto-model/Cargo.toml",
+        "//:qor-feo/Cargo.toml",
         "//:qor-rto/Cargo.toml",
         "//:qor-os/Cargo.toml",
         "//:qor-core/Cargo.toml",

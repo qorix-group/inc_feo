@@ -1,0 +1,7 @@
+[package]
+name = "qor-feo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+qor-rto = { path = "../qor-rto" }
