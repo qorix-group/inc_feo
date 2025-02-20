@@ -20,13 +20,14 @@ fn generate_ipc_events(activities: &Vec<Arc<Mutex<dyn Activity>>>) -> HashMap<St
 
     for activity in activities.iter() {
         let mut event_submap: HashMap<String, Event<IpcEvent>>= HashMap::new();
-
-        event_submap.insert("init".to_string(), IpcEvent::new(&format!("{}_init", activity.lock().unwrap().getname())));
-        event_submap.insert("init_ack".to_string(), IpcEvent::new(&format!("{}_init_ack", activity.lock().unwrap().getname())));
-        event_submap.insert("step".to_string(), IpcEvent::new(&format!("{}_step", activity.lock().unwrap().getname())));
-        event_submap.insert("step_ack".to_string(), IpcEvent::new(&format!("{}_step_ack", activity.lock().unwrap().getname())));
-        event_submap.insert("term".to_string(), IpcEvent::new(&format!("{}_term", activity.lock().unwrap().getname())));
-        event_submap.insert("term_ack".to_string(), IpcEvent::new(&format!("{}_term_ack", activity.lock().unwrap().getname())));
+        let name:&str= &activity.lock().unwrap().getname();
+        println!("{} - 1" ,name);
+        event_submap.insert("startup".to_string(), IpcEvent::new(&format!("{}_startup", name)));
+        event_submap.insert("startup_ack".to_string(), IpcEvent::new(&format!("{}_startup_ack", name)));
+        event_submap.insert("step".to_string(), IpcEvent::new(&format!("{}_step", name)));
+        event_submap.insert("step_ack".to_string(), IpcEvent::new(&format!("{}_step_ack", name)));
+        event_submap.insert("shutdown".to_string(), IpcEvent::new(&format!("{}_shutdown", name)));
+        event_submap.insert("shutdown_ack".to_string(), IpcEvent::new(&format!("{}_shutdown_ack", name)));
 
         events_map.insert(activity.lock().unwrap().getname(), event_submap);
     }
@@ -52,16 +53,17 @@ impl<'a> Agent<'a> {
         }
     }
 
-    fn init(&self)-> Box<dyn Action>{
+    fn startup(&self)-> Box<dyn Action>{
 
         let mut top_sequence = Sequence::new();
         
          for activity in self.activities.iter() {
             let name= &activity.lock().unwrap().getname();
             let sub_sequence =         Sequence::new()
-            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("init").unwrap().listener().unwrap()))
-            .with_step(Await::new_method_mut_u(activity, Activity::init))
-            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("init_ack").unwrap().notifier().unwrap()));
+            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("startup").unwrap().listener().unwrap()))
+            .with_step(Await::new_method_mut_u(activity, Activity::startup))
+            .with_step(Await::new_method_mut_u(activity, Activity::startup))
+            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("startup_ack").unwrap().notifier().unwrap()));
 
             top_sequence= top_sequence.with_step(sub_sequence);
      
@@ -89,16 +91,16 @@ impl<'a> Agent<'a> {
          top_sequence
     }
 
-    fn terminate(&self)-> Box<dyn Action>{
+    fn shutdown(&self)-> Box<dyn Action>{
 
         let mut top_sequence = Sequence::new();
         
          for activity in self.activities.iter() {
             let name= &activity.lock().unwrap().getname();
             let sub_sequence =         Sequence::new()
-            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("term").unwrap().listener().unwrap()))
-            .with_step(Await::new_method_mut_u(&activity.clone(), Activity::terminate))
-            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("term_ack").unwrap().notifier().unwrap()));
+            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("shutdown").unwrap().listener().unwrap()))
+            .with_step(Await::new_method_mut_u(&activity.clone(), Activity::shutdown))
+            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("shutdown_ack").unwrap().notifier().unwrap()));
 
 
             top_sequence= top_sequence.with_step(sub_sequence);
@@ -117,7 +119,7 @@ impl<'a> Agent<'a> {
                  Sequence::new()
                      //step
                      .with_step(
-                            self.init(),
+                            self.startup(),
                 )
                  .with_step(
                      ForRange::new(10).with_body(
@@ -125,7 +127,7 @@ impl<'a> Agent<'a> {
                      )
                  )
                  .with_step(
-                    self.terminate(),
+                    self.shutdown(),
                  ),
         );
 

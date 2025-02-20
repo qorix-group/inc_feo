@@ -8,7 +8,8 @@ use crate::ffi::{
     step_lane_assist,
 };
 use feo::com::{ActivityInput, ActivityOutput};
-use feo::prelude::{Activity, ActivityId};
+use qor_feo::prelude::{Activity,ActivityId};
+use qor_rto::prelude::*;
 use feo_log::debug;
 use feo_tracing::{instrument, tracing};
 use std::ffi::c_void;
@@ -36,15 +37,17 @@ pub struct Camera {
     distance_obstacle: f64,
 }
 
+unsafe impl Send for Camera {}  // Explicitly marking MyStruct as Send
+
 impl Camera {
-    pub fn build(activity_id: ActivityId, image_topic: &str) -> Box<dyn Activity> {
-        Box::new(Self {
+    pub fn build(activity_id: ActivityId, image_topic: &str) -> Camera {
+        Self {
             activity_id,
             output_image: ActivityOutput::get(image_topic),
             num_people: 4,
             num_cars: 10,
             distance_obstacle: 40.0,
-        })
+        }
     }
 
     fn get_image(&mut self) -> CameraImage {
@@ -70,11 +73,16 @@ impl Activity for Camera {
         self.activity_id
     }
 
+    fn getname(&mut self)-> String{
+        self.activity_id.to_string()
+    }
+
     #[instrument(name = "Camera startup")]
-    fn startup(&mut self) {}
+    fn startup(&mut self)-> RoutineResult {
+        Ok(())}
 
     #[instrument(name = "Camera")]
-    fn step(&mut self) {
+    fn step(&mut self)-> RoutineResult {
         debug!("Stepping Camera");
         sleep_random();
 
@@ -84,10 +92,11 @@ impl Activity for Camera {
             let camera = camera.write_payload(image);
             camera.send();
         }
+        Ok(())
     }
 
     #[instrument(name = "Camera shutdown")]
-    fn shutdown(&mut self) {}
+    fn shutdown(&mut self)-> RoutineResult {Ok(())}
 }
 
 /// Radar activity
@@ -104,13 +113,15 @@ pub struct Radar {
     distance_obstacle: f64,
 }
 
+unsafe impl Send for Radar {}  // Explicitly marking MyStruct as Send
+
 impl Radar {
-    pub fn build(activity_id: ActivityId, radar_topic: &str) -> Box<dyn Activity> {
-        Box::new(Self {
+    pub fn build(activity_id: ActivityId, radar_topic: &str) -> Radar {
+        Self {
             activity_id,
             output_scan: ActivityOutput::get(radar_topic),
             distance_obstacle: 40.0,
-        })
+        }
     }
 
     fn get_scan(&mut self) -> RadarScan {
@@ -133,11 +144,15 @@ impl Activity for Radar {
         self.activity_id
     }
 
+    fn getname(&mut self)-> String{
+        self.activity_id.to_string()
+    }
+
     #[instrument(name = "Radar startup")]
-    fn startup(&mut self) {}
+    fn startup(&mut self)-> RoutineResult {Ok(())}
 
     #[instrument(name = "Radar")]
-    fn step(&mut self) {
+    fn step(&mut self)-> RoutineResult {
         debug!("Stepping Radar");
         sleep_random();
 
@@ -147,10 +162,11 @@ impl Activity for Radar {
             let radar = radar.write_payload(scan);
             radar.send();
         }
+        Ok(())
     }
 
     #[instrument(name = "Radar shutdown")]
-    fn shutdown(&mut self) {}
+    fn shutdown(&mut self)-> RoutineResult {Ok(())}
 }
 
 /// Neural network activity
@@ -169,6 +185,7 @@ pub struct NeuralNet {
     /// Scene output
     output_scene: ActivityOutput<Scene>,
 }
+unsafe impl Send for NeuralNet {}  // Explicitly marking MyStruct as Send
 
 impl NeuralNet {
     pub fn build(
@@ -176,13 +193,13 @@ impl NeuralNet {
         image_topic: &str,
         scan_topic: &str,
         scene_topic: &str,
-    ) -> Box<dyn Activity> {
-        Box::new(Self {
+    ) -> NeuralNet {
+        Self {
             activity_id,
             input_image: ActivityInput::get(image_topic),
             input_scan: ActivityInput::get(scan_topic),
             output_scene: ActivityOutput::get(scene_topic),
-        })
+        }
     }
 
     fn infer(image: &CameraImage, radar: &RadarScan, scene: &mut MaybeUninit<Scene>) {
@@ -216,11 +233,15 @@ impl Activity for NeuralNet {
         self.activity_id
     }
 
+    fn getname(&mut self)-> String{
+        self.activity_id.to_string()
+    }
+
     #[instrument(name = "NeuralNet startup")]
-    fn startup(&mut self) {}
+    fn startup(&mut self)-> RoutineResult {Ok(())}
 
     #[instrument(name = "NeuralNet")]
-    fn step(&mut self) {
+    fn step(&mut self)-> RoutineResult {
         debug!("Stepping NeuralNet");
         sleep_random();
 
@@ -236,10 +257,11 @@ impl Activity for NeuralNet {
             let scene = unsafe { scene.assume_init() };
             scene.send();
         }
+        Ok(())
     }
 
     #[instrument(name = "NeuralNet shutdown")]
-    fn shutdown(&mut self) {}
+    fn shutdown(&mut self)-> RoutineResult {Ok(())}
 }
 
 /// Emergency braking activity
@@ -257,6 +279,8 @@ pub struct EmergencyBraking {
     /// Brake instruction output
     output_brake_instruction: ActivityOutput<BrakeInstruction>,
 }
+
+unsafe impl Send for EmergencyBraking {}  // Explicitly marking MyStruct as Send
 
 impl EmergencyBraking {
     pub fn build(
@@ -277,11 +301,15 @@ impl Activity for EmergencyBraking {
         self.activity_id
     }
 
+    fn getname(&mut self)-> String{
+        self.activity_id.to_string()
+    }
+
     #[instrument(name = "EmergencyBraking startup")]
-    fn startup(&mut self) {}
+    fn startup(&mut self)-> RoutineResult {Ok(())}
 
     #[instrument(name = "EmergencyBraking")]
-    fn step(&mut self) {
+    fn step(&mut self)-> RoutineResult {
         debug!("Stepping EmergencyBraking");
         sleep_random();
 
@@ -313,10 +341,11 @@ impl Activity for EmergencyBraking {
                 brake_instruction.send();
             }
         }
+        Ok(())
     }
 
     #[instrument(name = "EmergencyBraking shutdown")]
-    fn shutdown(&mut self) {}
+    fn shutdown(&mut self)-> RoutineResult {Ok(())}
 }
 
 /// Brake controller activity
@@ -340,18 +369,25 @@ impl BrakeController {
             input_brake_instruction: ActivityInput::get(brake_instruction_topic),
         })
     }
+    
 }
+
+unsafe impl Send for BrakeController {}  // Explicitly marking MyStruct as Send
 
 impl Activity for BrakeController {
     fn id(&self) -> ActivityId {
         self.activity_id
     }
 
+    fn getname(&mut self)-> String{
+        self.activity_id.to_string()
+    }
+
     #[instrument(name = "BrakeController startup")]
-    fn startup(&mut self) {}
+    fn startup(&mut self)-> RoutineResult {Ok(())}
 
     #[instrument(name = "BrakeController")]
-    fn step(&mut self) {
+    fn step(&mut self)-> RoutineResult {
         debug!("Stepping BrakeController");
         sleep_random();
 
@@ -363,10 +399,11 @@ impl Activity for BrakeController {
                 )
             }
         }
+        Ok(())
     }
 
     #[instrument(name = "BrakeController shutdown")]
-    fn shutdown(&mut self) {}
+    fn shutdown(&mut self)-> RoutineResult {Ok(())}
 }
 
 /// Environment renderer activity
@@ -391,26 +428,33 @@ impl EnvironmentRenderer {
     }
 }
 
+unsafe impl Send for EnvironmentRenderer {}  // Explicitly marking MyStruct as Send
+
 impl Activity for EnvironmentRenderer {
     fn id(&self) -> ActivityId {
         self.activity_id
     }
 
+    fn getname(&mut self)-> String{
+        self.activity_id.to_string()
+    }
+
     #[instrument(name = "EnvironmentRenderer startup")]
-    fn startup(&mut self) {}
+    fn startup(&mut self)-> RoutineResult {Ok(())}
 
     #[instrument(name = "EnvironmentRenderer")]
-    fn step(&mut self) {
+    fn step(&mut self)-> RoutineResult {
         debug!("Stepping EnvironmentRenderer");
         sleep_random();
 
         if let Some(_scene) = self.input_scene.read() {
             debug!("Rendering scene");
         }
+        Ok(())
     }
 
     #[instrument(name = "EnvironmentRenderer shutdown")]
-    fn shutdown(&mut self) {}
+    fn shutdown(&mut self)-> RoutineResult {Ok(())}
 }
 
 /// Lane assistant activity
@@ -430,6 +474,8 @@ pub struct LaneAssist {
     /// Pointer to wrapped initialized C++ class instance
     cpp_activity: *mut c_void,
 }
+
+unsafe impl Send for LaneAssist {}  // Explicitly marking MyStruct as Send
 
 impl LaneAssist {
     pub fn build(
@@ -461,13 +507,18 @@ impl Activity for LaneAssist {
         self.activity_id
     }
 
+    fn getname(&mut self)-> String{
+        self.activity_id.to_string()
+    }
+
     #[instrument(name = "LaneAssist startup")]
-    fn startup(&mut self) {
+    fn startup(&mut self)-> RoutineResult {
         unsafe { startup_lane_assist(self.cpp_activity) };
+        Ok(())
     }
 
     #[instrument(name = "LaneAssist")]
-    fn step(&mut self) {
+    fn step(&mut self)-> RoutineResult {
         debug!("Stepping LaneAssist");
         sleep_random();
 
@@ -485,11 +536,13 @@ impl Activity for LaneAssist {
 
             steering.send();
         }
+        Ok(())
     }
 
     #[instrument(name = "LaneAssist shutdown")]
-    fn shutdown(&mut self) {
+    fn shutdown(&mut self)-> RoutineResult {
         unsafe { shutdown_lane_assist(self.cpp_activity) };
+        Ok(())
     }
 }
 
@@ -507,6 +560,8 @@ pub struct SteeringController {
     input_steering: ActivityInput<Steering>,
 }
 
+unsafe impl Send for SteeringController {}  // Explicitly marking MyStruct as Send
+
 impl SteeringController {
     pub fn build(activity_id: ActivityId, steering_topic: &str) -> Box<dyn Activity> {
         Box::new(Self {
@@ -521,11 +576,15 @@ impl Activity for SteeringController {
         self.activity_id
     }
 
+    fn getname(&mut self)-> String{
+        self.activity_id.to_string()
+    }
+
     #[instrument(name = "SteeringController startup")]
-    fn startup(&mut self) {}
+    fn startup(&mut self)-> RoutineResult {Ok(())}
 
     #[instrument(name = "SteeringController")]
-    fn step(&mut self) {
+    fn step(&mut self)-> RoutineResult {
         debug!("Stepping SteeringController");
         sleep_random();
 
@@ -535,10 +594,11 @@ impl Activity for SteeringController {
                 steering.get().angle
             )
         }
+        Ok(())
     }
 
     #[instrument(name = "SteeringController shutdown")]
-    fn shutdown(&mut self) {}
+    fn shutdown(&mut self)-> RoutineResult {Ok(())}
 }
 
 /// Generate a pseudo-random number in the specified range.

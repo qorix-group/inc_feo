@@ -1,6 +1,7 @@
 pub mod prelude {
     pub use crate::executor::*;
     pub use crate::agent::*;
+    pub use crate::activity::*;
 }
 
 

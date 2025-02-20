@@ -23,13 +23,14 @@ fn generate_ipc_events(names: &[&str]) -> HashMap<String, HashMap<String, Event<
 
     for &name in names {
         let mut event_submap: HashMap<String, Event<IpcEvent>>= HashMap::new();
+        println!("{}" ,name);
 
-        event_submap.insert("init".to_string(), IpcEvent::new(&format!("{}_init", name)));
-        event_submap.insert("init_ack".to_string(), IpcEvent::new(&format!("{}_init_ack", name)));
+        event_submap.insert("startup".to_string(), IpcEvent::new(&format!("{}_startup", name)));
+        event_submap.insert("startup_ack".to_string(), IpcEvent::new(&format!("{}_startup_ack", name)));
         event_submap.insert("step".to_string(), IpcEvent::new(&format!("{}_step", name)));
         event_submap.insert("step_ack".to_string(), IpcEvent::new(&format!("{}_step_ack", name)));
-        event_submap.insert("term".to_string(), IpcEvent::new(&format!("{}_term", name)));
-        event_submap.insert("term_ack".to_string(), IpcEvent::new(&format!("{}_term_ack", name)));
+        event_submap.insert("shutdown".to_string(), IpcEvent::new(&format!("{}_shutdown", name)));
+        event_submap.insert("shutdown_ack".to_string(), IpcEvent::new(&format!("{}_shutdown_ack", name)));
 
         events_map.insert(name.to_string(), event_submap);
     }
@@ -63,8 +64,8 @@ impl<'a> Executor<'a> {
          for &name in names {
         
             let sub_sequence =         Sequence::new()
-            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("init").unwrap().notifier().unwrap()))
-            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("init_ack").unwrap().listener().unwrap()));
+            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("startup").unwrap().notifier().unwrap()))
+            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("startup_ack").unwrap().listener().unwrap()));
         
             top_sequence= top_sequence.with_step(sub_sequence);
         
@@ -90,8 +91,8 @@ impl<'a> Executor<'a> {
          for &name in names {
         
             let sub_sequence =         Sequence::new()
-            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("term").unwrap().notifier().unwrap()))
-            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("term_ack").unwrap().listener().unwrap()));
+            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("shutdown").unwrap().notifier().unwrap()))
+            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("shutdown_ack").unwrap().listener().unwrap()));
         
             top_sequence= top_sequence.with_step(sub_sequence);
         
@@ -136,6 +137,7 @@ impl<'a> Executor<'a> {
             ),
         );
 
+        println!("before run");
         let handle = pgminit.spawn(&self.engine).unwrap();
         let handle2 = tim_prog.spawn(&self.engine).unwrap();
 

@@ -15,6 +15,7 @@ members = [
     "qor-core",
     "qor-os",
     "qor-rto",
+    "qor-feo",
 ]
 resolver = "2"
 
