@@ -38,21 +38,35 @@ fn generate_ipc_events(names: &[&str]) -> HashMap<String, HashMap<String, Event<
     events_map
 }
 
+fn generate_agent_events(names: &[&str]) -> HashMap<String, Event<IpcEvent>>{
+    let mut events_map: HashMap<String,Event<IpcEvent>> = HashMap::new();
+
+    for &name in names {
+        events_map.insert(format!("{}_agent", name).to_string(), IpcEvent::new(&format!("{}_agent", name)));
+    }
+
+    events_map
+}
+
 
 
 pub struct Executor<'a> {
     engine: Engine,
     ipc_events:HashMap<String, HashMap<String, Event<IpcEvent>>>,
-    names: Vec<&'a str>
+    agent_events:HashMap<String, Event<IpcEvent>>,
+    names: Vec<&'a str>,
+    agents: Vec<&'a str>
 }
 
 impl<'a> Executor<'a> {
     //should take the task chain as input later
-    pub fn new(names: &'a[&'a str]) -> Self {
+    pub fn new(names: &'a[&'a str],agents:&'a[&'a str]) -> Self {
         Self {
             engine: Engine::default(),
             ipc_events:generate_ipc_events(names),
-            names:names.to_vec()
+            agent_events:generate_agent_events(agents),
+            names:names.to_vec(),
+            agents:agents.to_vec()
         }
     }
 
@@ -101,18 +115,38 @@ impl<'a> Executor<'a> {
          top_sequence
     }
 
+    fn sync_to_agents(&self,agents: &[&str])-> Box<dyn Action> {
+
+        let mut top_sequence = Sequence::new();
+        
+         for &name in agents {
+        
+            let sub_sequence =Sync::new(self.agent_events.get(&format!("{}_agent", name)).unwrap().listener().unwrap());
+        
+            top_sequence= top_sequence.with_step(sub_sequence);
+        
+         }
+    
+         top_sequence
+    }
+
     pub fn run(&self,graph: &HashMap<&str, Vec<&str>>) {
         self.engine.start().unwrap();
         let timer_event = SingleEvent::new();
         // our simulation period
 
+        let start_timer = SingleEvent::new();
+
         const PERIOD: Duration = Duration::from_millis(500);
         let tim_prog = Program::new().with_action(
-            ForRange::new(10).with_body(
+            Sequence::new()
+            .with_step(Sync::new(start_timer.listener().unwrap()))
+            .with_step(ForRange::new(10).with_body(
                 Sequence::new()
                     .with_step(Sleep::new(PERIOD))
                     .with_step(Trigger::new(timer_event.notifier().unwrap())),
             ),
+        )
         );
 
         println!("reach exec run");
@@ -121,8 +155,12 @@ impl<'a> Executor<'a> {
         let pgminit = Program::new().with_action(
             Sequence::new()
             .with_step(
+                self.sync_to_agents(&self.agents),
+            )
+            .with_step(
                 self.init(&self.names),
             )
+            .with_step(Trigger::new(start_timer.notifier().unwrap()))
             .with_step(
                 ForRange::new(10).with_body(
                     Sequence::new()

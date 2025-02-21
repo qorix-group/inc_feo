@@ -29,8 +29,6 @@ fn main() {
 
     info!("Starting agent {AGENT_ID}");
 
-    // Initialize topics. Do not drop.
-    let _topic_guards = initialize_topics();
 
     let cam_Act:Arc<Mutex<dyn Activity>> = Arc::new(Mutex::new(Camera::build(1.into(), TOPIC_CAMERA_FRONT)));
     let radar_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(Radar::build(2.into(), TOPIC_RADAR_FRONT)));
@@ -41,7 +39,7 @@ fn main() {
 
     let activities = vec![cam_Act,radar_Act,neural_net_Act];
     
-    let agent = Agent::new(&activities);
+    let agent = Agent::new(1,&activities);
 
     agent.run();
 

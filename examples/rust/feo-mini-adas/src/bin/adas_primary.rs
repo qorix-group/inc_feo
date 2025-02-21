@@ -25,6 +25,8 @@ fn main() {
     feo_tracing::init(feo_tracing::LevelFilter::TRACE);
 
     // let params = Params::from_args();
+    // Initialize topics. Do not drop.
+    let _topic_guards = initialize_topics();
 
     info!("Starting primary agent {AGENT_ID}. Waiting for connections",);
 
@@ -33,9 +35,12 @@ fn main() {
     let radar_activity:&str = &2.to_string();
     let neural_net_activity:&str = &3.to_string();
 
+    let agent_one:&str = &1.to_string();
+    let agent_two:&str = &2.to_string();
 
 
     let names: Vec<&str> = vec![cam_activity,radar_activity,neural_net_activity];
+    let agents: Vec<&str> = vec![agent_one];
 
     let dependency_graph: HashMap<&str, Vec<&str>> = HashMap::from([
         (cam_activity, vec![]),
@@ -43,7 +48,7 @@ fn main() {
          (radar_activity, vec![neural_net_activity]),     // 2a,b depends on b
     ]);
 
-    let exec = Executor::new(&names);
+    let exec = Executor::new(&names,&agents);
 
     exec.run(&dependency_graph);
 

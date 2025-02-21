@@ -287,12 +287,12 @@ impl EmergencyBraking {
         activity_id: ActivityId,
         scene_topic: &str,
         brake_instruction_topic: &str,
-    ) -> Box<dyn Activity> {
-        Box::new(Self {
+    ) -> EmergencyBraking {
+        Self {
             activity_id,
             input_scene: ActivityInput::get(scene_topic),
             output_brake_instruction: ActivityOutput::get(brake_instruction_topic),
-        })
+        }
     }
 }
 
@@ -363,11 +363,11 @@ pub struct BrakeController {
 }
 
 impl BrakeController {
-    pub fn build(activity_id: ActivityId, brake_instruction_topic: &str) -> Box<dyn Activity> {
-        Box::new(Self {
+    pub fn build(activity_id: ActivityId, brake_instruction_topic: &str) -> BrakeController{
+        Self {
             activity_id,
             input_brake_instruction: ActivityInput::get(brake_instruction_topic),
-        })
+        }
     }
     
 }
@@ -420,11 +420,11 @@ pub struct EnvironmentRenderer {
 }
 
 impl EnvironmentRenderer {
-    pub fn build(activity_id: ActivityId, scene_topic: &str) -> Box<dyn Activity> {
-        Box::new(Self {
+    pub fn build(activity_id: ActivityId, scene_topic: &str) -> EnvironmentRenderer {
+        Self {
             activity_id,
             input_scene: ActivityInput::get(scene_topic),
-        })
+        }
     }
 }
 
@@ -482,16 +482,16 @@ impl LaneAssist {
         activity_id: ActivityId,
         scene_topic: &str,
         steering_topic: &str,
-    ) -> Box<dyn Activity> {
+    ) -> LaneAssist {
         // Create C++ activity in heap memory of C++
         let cpp_activity = unsafe { create_lane_assist(activity_id.into()) };
 
-        Box::new(Self {
+        Self {
             activity_id,
             input_scene: ActivityInput::get(scene_topic),
             output_steering: ActivityOutput::get(steering_topic),
             cpp_activity,
-        })
+        }
     }
 }
 
@@ -563,11 +563,11 @@ pub struct SteeringController {
 unsafe impl Send for SteeringController {}  // Explicitly marking MyStruct as Send
 
 impl SteeringController {
-    pub fn build(activity_id: ActivityId, steering_topic: &str) -> Box<dyn Activity> {
-        Box::new(Self {
+    pub fn build(activity_id: ActivityId, steering_topic: &str) -> SteeringController {
+        Self {
             activity_id,
             input_steering: ActivityInput::get(steering_topic),
-        })
+        }
     }
 }
 
