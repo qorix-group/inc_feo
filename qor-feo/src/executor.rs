@@ -55,18 +55,24 @@ pub struct Executor<'a> {
     ipc_events:HashMap<String, HashMap<String, Event<IpcEvent>>>,
     agent_events:HashMap<String, Event<IpcEvent>>,
     names: Vec<&'a str>,
-    agents: Vec<&'a str>
+    agents: Vec<&'a str>,
+    timer_event:Event<SingleEvent>,
+    cycle_time:Duration,
+    stop_event:Event<SingleEvent>
 }
 
 impl<'a> Executor<'a> {
     //should take the task chain as input later
-    pub fn new(names: &'a[&'a str],agents:&'a[&'a str]) -> Self {
+    pub fn new(names: &'a[&'a str],agents:&'a[&'a str],cycle_time:Duration) -> Self {
         Self {
             engine: Engine::default(),
             ipc_events:generate_ipc_events(names),
             agent_events:generate_agent_events(agents),
             names:names.to_vec(),
-            agents:agents.to_vec()
+            agents:agents.to_vec(),
+            timer_event:SingleEvent::new(),
+            cycle_time:cycle_time,
+            stop_event:SingleEvent::new()
         }
     }
 
@@ -130,27 +136,24 @@ impl<'a> Executor<'a> {
          top_sequence
     }
 
+    fn timer_run(&self)->Box<dyn Action> {
+            Loop::new().with_body(
+                Sequence::new()
+                    .with_step(Sleep::new(self.cycle_time))
+                    .with_step(Trigger::new(self.timer_event.notifier().unwrap())),
+            )
+
+    }
+
+    pub fn stop_trigger(&self){
+
+        self.stop_event.notifier().unwrap().notify();
+    }
+
     pub fn run(&self,graph: &HashMap<&str, Vec<&str>>) {
         self.engine.start().unwrap();
-        let timer_event = SingleEvent::new();
-        // our simulation period
-
-        let start_timer = SingleEvent::new();
-
-        const PERIOD: Duration = Duration::from_millis(500);
-        let tim_prog = Program::new().with_action(
-            Sequence::new()
-            .with_step(Sync::new(start_timer.listener().unwrap()))
-            .with_step(ForRange::new(10).with_body(
-                Sequence::new()
-                    .with_step(Sleep::new(PERIOD))
-                    .with_step(Trigger::new(timer_event.notifier().unwrap())),
-            ),
-        )
-        );
 
         println!("reach exec run");
-
 
         let pgminit = Program::new().with_action(
             Sequence::new()
@@ -160,14 +163,18 @@ impl<'a> Executor<'a> {
             .with_step(
                 self.init(&self.names),
             )
-            .with_step(Trigger::new(start_timer.notifier().unwrap()))
             .with_step(
-                ForRange::new(10).with_body(
+                Computation::new()
+                .with_branch(self.timer_run())
+                .with_branch(Sync::new(self.stop_event.listener().unwrap()))
+                .with_branch(
+                    Loop::new().with_body(
                     Sequence::new()
-                    .with_step(Sync::new(timer_event.listener().unwrap()))
+                    .with_step(Sync::new(self.timer_event.listener().unwrap()))
                     .with_step(
                         self.dependency_graph_to_sequence(graph),
                     ),
+                )
                 ),
             )
             .with_step(
@@ -175,13 +182,21 @@ impl<'a> Executor<'a> {
             ),
         );
 
+        self.timer_run();
         println!("before run");
         let handle = pgminit.spawn(&self.engine).unwrap();
-        let handle2 = tim_prog.spawn(&self.engine).unwrap();
+
+
+        // here we wait for some time for the demo
+        std::thread::sleep(Duration::from_secs(15));
+
+        println!("reached 5sec");
+
+        self.stop_trigger();
 
         // Wait for the program to finish
         let _ = handle.join().unwrap();
-        let _ = handle2.join().unwrap();
+
 
         println!("Done");
     }

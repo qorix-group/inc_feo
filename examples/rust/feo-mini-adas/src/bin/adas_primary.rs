@@ -48,9 +48,10 @@ fn main() {
          (radar_activity, vec![neural_net_activity]),     // 2a,b depends on b
     ]);
 
-    let exec = Executor::new(&names,&agents);
+    let exec = Executor::new(&names,&agents,Duration::from_millis(500));
 
     exec.run(&dependency_graph);
+
 
 
 

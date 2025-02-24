@@ -69,7 +69,6 @@ impl<'a> Agent<'a> {
             let sub_sequence =         Sequence::new()
             .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("startup").unwrap().listener().unwrap()))
             .with_step(Await::new_method_mut_u(activity, Activity::startup))
-            .with_step(Await::new_method_mut_u(activity, Activity::startup))
             .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("startup_ack").unwrap().notifier().unwrap()));
 
             top_sequence= top_sequence.with_step(sub_sequence);
@@ -137,12 +136,9 @@ impl<'a> Agent<'a> {
                             self.startup(),
                 )
                  .with_step(
-                     ForRange::new(10).with_body(
-                        self.step(),
-                     )
-                 )
-                 .with_step(
-                    self.shutdown(),
+                    Computation::new()
+                     .with_branch(Loop::new().with_body(self.step(),))
+                     .with_branch(self.shutdown()),
                  ),
         );
 
