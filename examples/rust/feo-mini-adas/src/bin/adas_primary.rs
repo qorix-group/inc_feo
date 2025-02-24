@@ -7,13 +7,19 @@ use feo::configuration::worker_pool;
 use feo::prelude::*;
 use qor_feo::prelude::*;
 
+use qor_feo::prelude::{Activity,ActivityId};
+
 use feo::signalling::{channel, Signal};
 use feo_log::{info, LevelFilter};
 use feo_mini_adas::config::*;
 use feo_time::Duration;
 use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-
+use feo_mini_adas::activities::components::{
+    BrakeController, Camera, EmergencyBraking, EnvironmentRenderer, LaneAssist, NeuralNet, Radar,
+    SteeringController,
+};
+use std::{sync::{Arc, Mutex}};
 
 
 const AGENT_ID: AgentId = AgentId::new(100);
@@ -34,21 +40,42 @@ fn main() {
     let cam_activity:&str = &1.to_string();
     let radar_activity:&str = &2.to_string();
     let neural_net_activity:&str = &3.to_string();
+    let emg_brk_Act:&str = &4.to_string();
+    let brk_ctr_Act:&str = &5.to_string();
 
     let agent_one:&str = &1.to_string();
     let agent_two:&str = &2.to_string();
 
 
-    let names: Vec<&str> = vec![cam_activity,radar_activity,neural_net_activity];
-    let agents: Vec<&str> = vec![agent_one];
+    let names: Vec<&str> = vec![cam_activity,radar_activity,neural_net_activity,emg_brk_Act,brk_ctr_Act];
+    let agents: Vec<&str> = vec![agent_one,agent_two];
 
     let dependency_graph: HashMap<&str, Vec<&str>> = HashMap::from([
         (cam_activity, vec![]),
          (cam_activity, vec![radar_activity]),     // B depends on A
-         (radar_activity, vec![neural_net_activity]),     // 2a,b depends on b
+         (radar_activity, vec![neural_net_activity]),   
+         (neural_net_activity, vec![emg_brk_Act]), 
+         (emg_brk_Act, vec![brk_ctr_Act]),   // 2a,b depends on b
     ]);
 
-    let exec = Executor::new(&names,&agents,Duration::from_millis(500));
+    //Agent setup
+
+    let cam_Act:Arc<Mutex<dyn Activity>> = Arc::new(Mutex::new(Camera::build(1.into(), TOPIC_CAMERA_FRONT)));
+    let radar_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(Radar::build(2.into(), TOPIC_RADAR_FRONT)));
+    let neural_net_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(NeuralNet::build(3.into(),TOPIC_CAMERA_FRONT,TOPIC_RADAR_FRONT,TOPIC_INFERRED_SCENE)));
+    // EmergencyBraking::build(id, TOPIC_INFERRED_SCENE, TOPIC_CONTROL_BRAKES);
+    // BrakeController::build(id, TOPIC_CONTROL_BRAKES);
+
+
+    let activities = vec![cam_Act,radar_Act,neural_net_Act];
+    
+    let agent = Agent::new(1,&activities);
+
+    //
+
+
+
+    let exec = Executor::new(&names,&agents,Duration::from_millis(500),agent);
 
     exec.run(&dependency_graph);
 

@@ -8,6 +8,8 @@
 
 use qor_rto::prelude::*;
 
+use crate::Agent;
+
 use std::{
     sync::{Arc, Mutex, RwLock},
     time::{Duration, Instant},
@@ -58,12 +60,13 @@ pub struct Executor<'a> {
     agents: Vec<&'a str>,
     timer_event:Event<SingleEvent>,
     cycle_time:Duration,
-    stop_event:Event<SingleEvent>
+    stop_event:Event<SingleEvent>,
+    agent:Agent<'a>,
 }
 
 impl<'a> Executor<'a> {
     //should take the task chain as input later
-    pub fn new(names: &'a[&'a str],agents:&'a[&'a str],cycle_time:Duration) -> Self {
+    pub fn new(names: &'a[&'a str],agents:&'a[&'a str],cycle_time:Duration,agent:Agent<'a>) -> Self {
         Self {
             engine: Engine::default(),
             ipc_events:generate_ipc_events(names),
@@ -72,7 +75,8 @@ impl<'a> Executor<'a> {
             agents:agents.to_vec(),
             timer_event:SingleEvent::new(),
             cycle_time:cycle_time,
-            stop_event:SingleEvent::new()
+            stop_event:SingleEvent::new(),
+            agent:agent,
         }
     }
 
@@ -185,7 +189,7 @@ impl<'a> Executor<'a> {
         self.timer_run();
         println!("before run");
         let handle = pgminit.spawn(&self.engine).unwrap();
-
+        let handle_agent = self.agent.agent_program().spawn(&self.engine).unwrap();
 
         // here we wait for some time for the demo
         std::thread::sleep(Duration::from_secs(15));
@@ -194,6 +198,8 @@ impl<'a> Executor<'a> {
 
         self.stop_trigger();
 
+
+        let _ = handle_agent.join().unwrap();
         // Wait for the program to finish
         let _ = handle.join().unwrap();
 

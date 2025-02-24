@@ -121,26 +121,30 @@ impl<'a> Agent<'a> {
         .with_step(Trigger::new(self.agent_event.get(&format!("{}_agent", self.id.to_string())).unwrap().notifier().unwrap()))
     }
 
+    pub fn agent_program(&self)-> Program {
+        Program::new().with_action(
+            Sequence::new()
+            .with_step(
+               self.connect_to_executor(),
+   )
+                //step
+                .with_step(
+                       self.startup(),
+           )
+            .with_step(
+               Computation::new()
+                .with_branch(Loop::new().with_body(self.step(),))
+                .with_branch(self.shutdown()),
+            ),
+   )
+
+    }
 
     pub fn run(&self){
         self.engine.start().unwrap();
         println!("reach");
 
-        let pgminit = Program::new().with_action(
-                 Sequence::new()
-                 .with_step(
-                    self.connect_to_executor(),
-        )
-                     //step
-                     .with_step(
-                            self.startup(),
-                )
-                 .with_step(
-                    Computation::new()
-                     .with_branch(Loop::new().with_body(self.step(),))
-                     .with_branch(self.shutdown()),
-                 ),
-        );
+        let pgminit = self.agent_program();
 
         
         let handle = pgminit.spawn(&self.engine).unwrap();

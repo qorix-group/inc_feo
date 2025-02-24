@@ -30,16 +30,16 @@ fn main() {
     info!("Starting agent {AGENT_ID}");
 
 
-    let cam_Act:Arc<Mutex<dyn Activity>> = Arc::new(Mutex::new(Camera::build(1.into(), TOPIC_CAMERA_FRONT)));
-    let radar_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(Radar::build(2.into(), TOPIC_RADAR_FRONT)));
-    let neural_net_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(NeuralNet::build(3.into(),TOPIC_CAMERA_FRONT,TOPIC_RADAR_FRONT,TOPIC_INFERRED_SCENE)));
+    let emg_brk_Act:Arc<Mutex<dyn Activity>> = Arc::new(Mutex::new(EmergencyBraking::build(4.into(), TOPIC_INFERRED_SCENE, TOPIC_CONTROL_BRAKES)));
+    let brk_ctr_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(BrakeController::build(5.into(), TOPIC_CONTROL_BRAKES)));
+    //let neural_net_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(NeuralNet::build(3.into(),TOPIC_CAMERA_FRONT,TOPIC_RADAR_FRONT,TOPIC_INFERRED_SCENE)));
     // EmergencyBraking::build(id, TOPIC_INFERRED_SCENE, TOPIC_CONTROL_BRAKES);
     // BrakeController::build(id, TOPIC_CONTROL_BRAKES);
 
 
-    let activities = vec![cam_Act,radar_Act,neural_net_Act];
+    let activities = vec![emg_brk_Act,brk_ctr_Act];
     
-    let agent = Agent::new(1,&activities);
+    let agent = Agent::new(2,&activities);
 
     agent.run();
 
