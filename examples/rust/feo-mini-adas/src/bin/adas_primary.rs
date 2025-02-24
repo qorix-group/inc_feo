@@ -52,14 +52,34 @@ fn main() {
     let names: Vec<&str> = vec![cam_activity,radar_activity,neural_net_act,environ_renderer_act,emg_brk_Act,brk_ctr_Act];
     let agents: Vec<&str> = vec![agent_one,agent_two,agent_three];
 
-    let dependency_graph: HashMap<&str, Vec<&str>> = HashMap::from([
+    // let dependency_graph: HashMap<&str, Vec<&str>> = HashMap::from([
+    //     (cam_activity, vec![]),
+    //      (cam_activity, vec![radar_activity]),     // B depends on A
+    //      (radar_activity, vec![neural_net_act]), 
+    //      (neural_net_act, vec![environ_renderer_act]),  
+    //      (environ_renderer_act, vec![emg_brk_Act]), 
+    //      (emg_brk_Act, vec![brk_ctr_Act]),   // 2a,b depends on b
+    // ]);
+
+        let dependency_graph:HashMap<&str, Vec<&str>> = HashMap::from([
+        // Camera
         (cam_activity, vec![]),
-         (cam_activity, vec![radar_activity]),     // B depends on A
-         (radar_activity, vec![neural_net_act]), 
-         (neural_net_act, vec![environ_renderer_act]),  
-         (environ_renderer_act, vec![emg_brk_Act]), 
-         (emg_brk_Act, vec![brk_ctr_Act]),   // 2a,b depends on b
+        // Radar
+        (radar_activity, vec![]),
+        // NeuralNet
+        (neural_net_act, vec![cam_activity, radar_activity]),
+        // EnvironmentRenderer
+        (environ_renderer_act, vec![neural_net_act]),
+        // EmergencyBraking
+        (emg_brk_Act, vec![neural_net_act,environ_renderer_act]),
+        // LaneAssist
+        (brk_ctr_Act, vec![neural_net_act,environ_renderer_act]),
+        // BrakeController
+        // (6.into(), vec![emg_brk_Act]),
+        // // SteeringController
+        // (7.into(), vec![brk_ctr_Act]),
     ]);
+
 
     //Agent setup
 

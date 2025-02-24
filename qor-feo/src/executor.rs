@@ -176,7 +176,7 @@ impl<'a> Executor<'a> {
                     Sequence::new()
                     .with_step(Sync::new(self.timer_event.listener().unwrap()))
                     .with_step(
-                        self.dependency_graph_to_sequence(graph),
+                        self.dependency_graph_to_execution(graph),
                     ),
                 )
                 ),
@@ -207,36 +207,38 @@ impl<'a> Executor<'a> {
         println!("Done");
     }
 
+
 /// Converts a dependency graph into an execution sequence.
-fn dependency_graph_to_sequence(&self,graph: &HashMap<&str, Vec<&str>>) -> Box<dyn Action> {
-    let mut in_degree = HashMap::new();
-    let mut adj_list = HashMap::new();
+pub fn dependency_graph_to_execution(&self, graph: &HashMap<&str, Vec<&str>>) -> Box<dyn Action> {
+    let mut in_degree = HashMap::new();  // To track in-degree (dependencies count)
+    let mut adj_list = HashMap::new();   // To track adjacency list (dependencies for each task)
+    let mut tasks = HashSet::new();     // To track all tasks (used for topological sorting)
 
     // Initialize in-degree and adjacency list
     for (&task, deps) in graph.iter() {
-        in_degree.entry(task).or_insert(0);
+        tasks.insert(task);
+        in_degree.entry(task).or_insert(deps.len()); // Set in-degree to the size of the dependencies
+        adj_list.entry(task).or_insert(Vec::new());  // Ensure task exists in adj_list
         for &dep in deps {
-            *in_degree.entry(dep).or_insert(0) += 1;
-            adj_list.entry(dep).or_insert(Vec::new());
+            adj_list.entry(dep).or_insert(Vec::new()).push(task); // Add task to dependent tasks
         }
-        adj_list.insert(task, deps.clone());
     }
 
-    // Queue for tasks with no dependencies (ready to run)
+    // Perform topological sorting using Kahn's algorithm
     let mut queue: VecDeque<&str> = in_degree
         .iter()
-        .filter(|(_, &count)| count == 0)
+        .filter(|(_, &count)| count == 0) // Tasks with no dependencies
         .map(|(&task, _)| task)
         .collect();
 
-    let mut sequence = Sequence::new();
+    let mut execution_order = Vec::new(); // To track the overall execution order
+    let mut dependency_groups: HashMap<(usize, Vec<&str>), Vec<&str>> = HashMap::new();
 
-    // Process tasks level by level
     while !queue.is_empty() {
         let mut current_level = Vec::new();
-        let mut next_queue = VecDeque::new();
 
-        for &task in queue.iter() {
+        // Collect tasks with no remaining dependencies (in-degree == 0)
+        while let Some(task) = queue.pop_front() {
             current_level.push(task);
 
             if let Some(dependents) = adj_list.get(task) {
@@ -244,29 +246,62 @@ fn dependency_graph_to_sequence(&self,graph: &HashMap<&str, Vec<&str>>) -> Box<d
                     if let Some(count) = in_degree.get_mut(dep) {
                         *count -= 1;
                         if *count == 0 {
-                            next_queue.push_back(dep);
+                            queue.push_back(dep); // Add to queue when in-degree becomes 0
                         }
                     }
                 }
             }
         }
 
-        // Add to sequence: single step or concurrent
-        if current_level.len() == 1 {
-            sequence = sequence.with_step(self.step(current_level[0]));
-        } else {
-            let mut concurrency = Concurrency::new();
-            for task in current_level {
-                concurrency = concurrency.with_branch(self.step(task));
+        // Group tasks by dependency count and exact dependencies
+        for &task in &current_level {
+            if let Some(deps) = graph.get(task) {
+                let dep_count = deps.len();
+                let mut dep_sorted = deps.clone();
+                dep_sorted.sort(); // Sort dependencies to ensure consistent grouping
+                dependency_groups
+                    .entry((dep_count, dep_sorted))
+                    .or_insert(Vec::new())
+                    .push(task);
             }
-            sequence = sequence.with_step(concurrency);
         }
 
-        queue = next_queue;
+        // Add the tasks in the current level to the execution order
+        execution_order.extend(current_level);
     }
 
-    sequence
+    // Initialize the sequence to store actions
+    let mut sequence = Sequence::new();
+
+    // Now group tasks with the same dependencies into concurrency blocks
+    for ((dep_count, deps), tasks) in dependency_groups {
+        if !tasks.is_empty() {
+            // Group tasks with the same dependency count and dependencies
+            let mut concurrency_action = Concurrency::new();
+            for task in tasks.iter() {
+                let action = self.step(task); // Generate action for task
+                concurrency_action = concurrency_action.with_branch(action);
+            }
+            // Add the concurrency action as a step for this dependency count and dependency set
+            println!("Adding Concurrency Block for {} dependencies with dependencies {:?}: {:?}", dep_count, deps, tasks);
+            sequence = sequence.with_step(concurrency_action);
+        }
+    }
+
+    // Return the final sequence of actions
+    println!("Overall Execution Order: {:?}", execution_order);
+    sequence as Box<dyn Action>
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
