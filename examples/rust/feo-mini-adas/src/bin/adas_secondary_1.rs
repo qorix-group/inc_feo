@@ -30,8 +30,8 @@ fn main() {
     info!("Starting agent {AGENT_ID}");
 
 
-    let emg_brk_Act:Arc<Mutex<dyn Activity>> = Arc::new(Mutex::new(EmergencyBraking::build(4.into(), TOPIC_INFERRED_SCENE, TOPIC_CONTROL_BRAKES)));
-    let brk_ctr_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(BrakeController::build(5.into(), TOPIC_CONTROL_BRAKES)));
+    let emg_brk_Act:Arc<Mutex<dyn Activity>> = Arc::new(Mutex::new(EmergencyBraking::build(5.into(), TOPIC_INFERRED_SCENE, TOPIC_CONTROL_BRAKES)));
+    let brk_ctr_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(BrakeController::build(6.into(), TOPIC_CONTROL_BRAKES)));
     //let neural_net_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(NeuralNet::build(3.into(),TOPIC_CAMERA_FRONT,TOPIC_RADAR_FRONT,TOPIC_INFERRED_SCENE)));
     // EmergencyBraking::build(id, TOPIC_INFERRED_SCENE, TOPIC_CONTROL_BRAKES);
     // BrakeController::build(id, TOPIC_CONTROL_BRAKES);
@@ -39,7 +39,7 @@ fn main() {
 
     let activities = vec![emg_brk_Act,brk_ctr_Act];
     
-    let agent = Agent::new(2,&activities);
+    let agent = Agent::new(3,&activities);
 
     agent.run();
 

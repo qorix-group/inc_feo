@@ -39,22 +39,25 @@ fn main() {
 
     let cam_activity:&str = &1.to_string();
     let radar_activity:&str = &2.to_string();
-    let neural_net_activity:&str = &3.to_string();
-    let emg_brk_Act:&str = &4.to_string();
-    let brk_ctr_Act:&str = &5.to_string();
+    let neural_net_act:&str = &3.to_string();
+    let environ_renderer_act:&str = &4.to_string();
+    let emg_brk_Act:&str = &5.to_string();
+    let brk_ctr_Act:&str = &6.to_string();
 
     let agent_one:&str = &1.to_string();
     let agent_two:&str = &2.to_string();
+    let agent_three:&str = &3.to_string();
 
 
-    let names: Vec<&str> = vec![cam_activity,radar_activity,neural_net_activity,emg_brk_Act,brk_ctr_Act];
-    let agents: Vec<&str> = vec![agent_one,agent_two];
+    let names: Vec<&str> = vec![cam_activity,radar_activity,neural_net_act,environ_renderer_act,emg_brk_Act,brk_ctr_Act];
+    let agents: Vec<&str> = vec![agent_one,agent_two,agent_three];
 
     let dependency_graph: HashMap<&str, Vec<&str>> = HashMap::from([
         (cam_activity, vec![]),
          (cam_activity, vec![radar_activity]),     // B depends on A
-         (radar_activity, vec![neural_net_activity]),   
-         (neural_net_activity, vec![emg_brk_Act]), 
+         (radar_activity, vec![neural_net_act]), 
+         (neural_net_act, vec![environ_renderer_act]),  
+         (environ_renderer_act, vec![emg_brk_Act]), 
          (emg_brk_Act, vec![brk_ctr_Act]),   // 2a,b depends on b
     ]);
 
@@ -62,12 +65,11 @@ fn main() {
 
     let cam_Act:Arc<Mutex<dyn Activity>> = Arc::new(Mutex::new(Camera::build(1.into(), TOPIC_CAMERA_FRONT)));
     let radar_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(Radar::build(2.into(), TOPIC_RADAR_FRONT)));
-    let neural_net_Act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(NeuralNet::build(3.into(),TOPIC_CAMERA_FRONT,TOPIC_RADAR_FRONT,TOPIC_INFERRED_SCENE)));
     // EmergencyBraking::build(id, TOPIC_INFERRED_SCENE, TOPIC_CONTROL_BRAKES);
     // BrakeController::build(id, TOPIC_CONTROL_BRAKES);
 
 
-    let activities = vec![cam_Act,radar_Act,neural_net_Act];
+    let activities = vec![cam_Act,radar_Act];
     
     let agent = Agent::new(1,&activities);
 

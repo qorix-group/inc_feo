@@ -6,8 +6,17 @@ use configuration::secondary_agent::Builder;
 use feo::configuration::worker_pool;
 use feo::prelude::*;
 use feo_log::{info, LevelFilter};
-use feo_mini_adas::config;
+use feo_mini_adas::config::*;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use qor_feo::prelude::{Activity,ActivityId};
+use std::{sync::{Arc, Mutex}};
+
+use feo_mini_adas::activities::components::{
+    BrakeController, Camera, EmergencyBraking, EnvironmentRenderer, LaneAssist, NeuralNet, Radar,
+    SteeringController,
+};
+
+use qor_feo::prelude::*;
 
 /// This agent's ID
 const AGENT_ID: AgentId = AgentId::new(102);
@@ -20,30 +29,18 @@ fn main() {
 
     info!("Starting agent {AGENT_ID}");
 
-    // Create worker pool builder activity builder for local worker pool
-    let mut worker_pool_builder = worker_pool::Builder::default();
 
-    let mut worker_pool_configuration = config::pool_configuration();
-    let assignments = worker_pool_configuration
-        .remove(&AGENT_ID)
-        .expect("missing agent id in pool configuration");
+    
+    let neural_net_act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(NeuralNet::build(3.into(),TOPIC_CAMERA_FRONT,TOPIC_RADAR_FRONT,TOPIC_INFERRED_SCENE)));
+    let environ_renderer_act:Arc<Mutex<dyn Activity>> =Arc::new(Mutex::new(EnvironmentRenderer::build(4.into(), TOPIC_INFERRED_SCENE)));
+    // EmergencyBraking::build(id, TOPIC_INFERRED_SCENE, TOPIC_CONTROL_BRAKES);
+    // BrakeController::build(id, TOPIC_CONTROL_BRAKES);
 
-    // Assign activities to workers
-    for (worker_id, activities) in assignments {
-        for (activity_id, builder) in activities {
-            worker_pool_builder.activity(worker_id, activity_id, builder);
-        }
-    }
 
-    let (worker_pool, _, receiver) = worker_pool_builder.build().expect("Worker pool is empty");
+    let activities = vec![neural_net_act,environ_renderer_act];
+    
+    let agent = Agent::new(2,&activities);
 
-    // Construct the agent
-    let agent = Builder::default()
-        .id(AGENT_ID)
-        .primary(PRIMARY_ADDR)
-        .worker_pool(worker_pool, receiver)
-        .build();
+    agent.run();
 
-    // Start the agent loop and never return.
-    secondary::run(agent);
 }
