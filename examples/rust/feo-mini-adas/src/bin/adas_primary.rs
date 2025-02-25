@@ -43,13 +43,15 @@ fn main() {
     let environ_renderer_act:&str = &4.to_string();
     let emg_brk_Act:&str = &5.to_string();
     let brk_ctr_Act:&str = &6.to_string();
+    let lane_asst_Act:&str= &7.to_string();
+    let str_ctr_Act:&str =&8.to_string();
 
     let agent_one:&str = &1.to_string();
     let agent_two:&str = &2.to_string();
     let agent_three:&str = &3.to_string();
 
 
-    let names: Vec<&str> = vec![cam_activity,radar_activity,neural_net_act,environ_renderer_act,emg_brk_Act,brk_ctr_Act];
+    let names: Vec<&str> = vec![cam_activity,radar_activity,neural_net_act,environ_renderer_act,emg_brk_Act,brk_ctr_Act,lane_asst_Act,str_ctr_Act];
     let agents: Vec<&str> = vec![agent_one,agent_two,agent_three];
 
     // let dependency_graph: HashMap<&str, Vec<&str>> = HashMap::from([
@@ -80,6 +82,14 @@ fn main() {
         // (7.into(), vec![brk_ctr_Act]),
     ]);
 
+    let execution_structure = vec![
+        vec![cam_activity, radar_activity],        // Can run in parallel
+        vec![neural_net_act],              // Runs after Camera & Radar
+        vec![environ_renderer_act],    // Runs after NeuralNet
+        vec![emg_brk_Act, lane_asst_Act], // Can run in parallel after EnvironmentRenderer
+        vec![brk_ctr_Act],        // Runs after EmergencyBraking
+        vec![str_ctr_Act],      // Runs after BrakeController
+    ];
 
     //Agent setup
 
@@ -99,7 +109,7 @@ fn main() {
 
     let exec = Executor::new(&names,&agents,Duration::from_millis(500),agent);
 
-    exec.run(&dependency_graph);
+    exec.run(&execution_structure);
 
 
 

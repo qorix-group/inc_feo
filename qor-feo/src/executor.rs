@@ -154,7 +154,7 @@ impl<'a> Executor<'a> {
         self.stop_event.notifier().unwrap().notify();
     }
 
-    pub fn run(&self,graph: &HashMap<&str, Vec<&str>>) {
+    pub fn run(&self,graph: &Vec<Vec<&str>>) {
         self.engine.start().unwrap();
 
         println!("reach exec run");
@@ -209,87 +209,29 @@ impl<'a> Executor<'a> {
 
 
 /// Converts a dependency graph into an execution sequence.
-pub fn dependency_graph_to_execution(&self, graph: &HashMap<&str, Vec<&str>>) -> Box<dyn Action> {
-    let mut in_degree = HashMap::new();  // To track in-degree (dependencies count)
-    let mut adj_list = HashMap::new();   // To track adjacency list (dependencies for each task)
-    let mut tasks = HashSet::new();     // To track all tasks (used for topological sorting)
+pub fn dependency_graph_to_execution(&self, execution_structure: &Vec<Vec<&str>>) -> Box<dyn Action> {
+    let mut sequence = Sequence::new(); // The overall execution sequence
 
-    // Initialize in-degree and adjacency list
-    for (&task, deps) in graph.iter() {
-        tasks.insert(task);
-        in_degree.entry(task).or_insert(deps.len()); // Set in-degree to the size of the dependencies
-        adj_list.entry(task).or_insert(Vec::new());  // Ensure task exists in adj_list
-        for &dep in deps {
-            adj_list.entry(dep).or_insert(Vec::new()).push(task); // Add task to dependent tasks
-        }
-    }
-
-    // Perform topological sorting using Kahn's algorithm
-    let mut queue: VecDeque<&str> = in_degree
-        .iter()
-        .filter(|(_, &count)| count == 0) // Tasks with no dependencies
-        .map(|(&task, _)| task)
-        .collect();
-
-    let mut execution_order = Vec::new(); // To track the overall execution order
-    let mut dependency_groups: HashMap<(usize, Vec<&str>), Vec<&str>> = HashMap::new();
-
-    while !queue.is_empty() {
-        let mut current_level = Vec::new();
-
-        // Collect tasks with no remaining dependencies (in-degree == 0)
-        while let Some(task) = queue.pop_front() {
-            current_level.push(task);
-
-            if let Some(dependents) = adj_list.get(task) {
-                for &dep in dependents {
-                    if let Some(count) = in_degree.get_mut(dep) {
-                        *count -= 1;
-                        if *count == 0 {
-                            queue.push_back(dep); // Add to queue when in-degree becomes 0
-                        }
-                    }
-                }
-            }
-        }
-
-        // Group tasks by dependency count and exact dependencies
-        for &task in &current_level {
-            if let Some(deps) = graph.get(task) {
-                let dep_count = deps.len();
-                let mut dep_sorted = deps.clone();
-                dep_sorted.sort(); // Sort dependencies to ensure consistent grouping
-                dependency_groups
-                    .entry((dep_count, dep_sorted))
-                    .or_insert(Vec::new())
-                    .push(task);
-            }
-        }
-
-        // Add the tasks in the current level to the execution order
-        execution_order.extend(current_level);
-    }
-
-    // Initialize the sequence to store actions
-    let mut sequence = Sequence::new();
-
-    // Now group tasks with the same dependencies into concurrency blocks
-    for ((dep_count, deps), tasks) in dependency_groups {
-        if !tasks.is_empty() {
-            // Group tasks with the same dependency count and dependencies
+    for task_group in execution_structure {
+        if task_group.len() == 1 {
+            // If only one task, add it directly to the sequence
+            let action = self.step(task_group[0]);
+            println!("Adding Sequential Task: {}", task_group[0]);
+            sequence = sequence.with_step(action);
+        } else {
+            // If multiple tasks, add them in a concurrency block
             let mut concurrency_action = Concurrency::new();
-            for task in tasks.iter() {
-                let action = self.step(task); // Generate action for task
+            for &task in task_group {
+                let action = self.step(task);
+                println!("Adding Task to Concurrency Block: {}", task);
                 concurrency_action = concurrency_action.with_branch(action);
             }
-            // Add the concurrency action as a step for this dependency count and dependency set
-            println!("Adding Concurrency Block for {} dependencies with dependencies {:?}: {:?}", dep_count, deps, tasks);
+            println!("Adding Concurrency Block: {:?}", task_group);
             sequence = sequence.with_step(concurrency_action);
         }
     }
 
-    // Return the final sequence of actions
-    println!("Overall Execution Order: {:?}", execution_order);
+    println!("\nFinal Execution Plan:");
     sequence as Box<dyn Action>
 }
 
