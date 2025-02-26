@@ -65,10 +65,9 @@ pub struct Executor<'a> {
 }
 
 impl<'a> Executor<'a> {
-    //should take the task chain as input later
-    pub fn new(names: &'a[&'a str],agents:&'a[&'a str],cycle_time:Duration,agent:Agent<'a>) -> Self {
+    pub fn new(names: &'a[&'a str],agents:&'a[&'a str],cycle_time:Duration,agent:Agent<'a>,engine:Engine) -> Self {
         Self {
-            engine: Engine::default(),
+            engine: engine,
             ipc_events:generate_ipc_events(names),
             agent_events:generate_agent_events(agents),
             names:names.to_vec(),
@@ -186,7 +185,6 @@ impl<'a> Executor<'a> {
             ),
         );
 
-        self.timer_run();
         println!("before run");
         let handle = pgminit.spawn(&self.engine).unwrap();
         let handle_agent = self.agent.agent_program().spawn(&self.engine).unwrap();

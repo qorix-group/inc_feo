@@ -48,12 +48,12 @@ pub struct Agent<'a>{
 
 impl<'a> Agent<'a> {
     //should take the task chain as input later
-    pub fn new(id:usize,this: &'a Vec<Arc<Mutex<dyn Activity>>>) -> Self {
+    pub fn new(id:usize,this: &'a Vec<Arc<Mutex<dyn Activity>>>,engine:Engine) -> Self {
         let mut events_map: HashMap<String,Event<IpcEvent>> = HashMap::new();
         events_map.insert(format!("{}_agent", id.to_string()).to_string(), IpcEvent::new(&format!("{}_agent", id.to_string())));
         Self {
             id:id,
-            engine: Engine::default(),
+            engine: engine,
             ipc_events:generate_ipc_events(this),
             agent_event:events_map,
             activities: this

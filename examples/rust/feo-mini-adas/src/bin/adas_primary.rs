@@ -101,13 +101,13 @@ fn main() {
 
     let activities = vec![cam_Act,radar_Act];
     
-    let agent = Agent::new(1,&activities);
+    let agent = Agent::new(1,&activities,Engine::default());
 
     //
 
 
 
-    let exec = Executor::new(&names,&agents,Duration::from_millis(500),agent);
+    let exec = Executor::new(&names,&agents,Duration::from_millis(500),agent,Engine::default());
 
     exec.run(&execution_structure);
 
