@@ -73,9 +73,9 @@ fn main() {
         // EnvironmentRenderer
         (environ_renderer_act, vec![neural_net_act]),
         // EmergencyBraking
-        (emg_brk_Act, vec![neural_net_act,environ_renderer_act]),
+        (emg_brk_Act, vec![neural_net_act]),
         // LaneAssist
-        (brk_ctr_Act, vec![neural_net_act,environ_renderer_act]),
+        (brk_ctr_Act, vec![neural_net_act]),
         // BrakeController
         // (6.into(), vec![emg_brk_Act]),
         // // SteeringController
@@ -85,8 +85,7 @@ fn main() {
     let execution_structure = vec![
         vec![cam_activity, radar_activity],        // Can run in parallel
         vec![neural_net_act],              // Runs after Camera & Radar
-        vec![environ_renderer_act],    // Runs after NeuralNet
-        vec![emg_brk_Act, lane_asst_Act], // Can run in parallel after EnvironmentRenderer
+        vec![environ_renderer_act, emg_brk_Act, lane_asst_Act],    // Runs after NeuralNet
         vec![brk_ctr_Act],        // Runs after EmergencyBraking
         vec![str_ctr_Act],      // Runs after BrakeController
     ];

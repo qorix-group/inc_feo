@@ -62,7 +62,7 @@ impl<'a> Agent<'a> {
 
     fn startup(&self)-> Box<dyn Action>{
 
-        let mut top_sequence = Sequence::new();
+        let mut top_sequence = Concurrency::new();
         
          for activity in self.activities.iter() {
             let name= &activity.lock().unwrap().getname();
@@ -71,7 +71,7 @@ impl<'a> Agent<'a> {
             .with_step(Await::new_method_mut_u(activity, Activity::startup))
             .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("startup_ack").unwrap().notifier().unwrap()));
 
-            top_sequence= top_sequence.with_step(sub_sequence);
+            top_sequence= top_sequence.with_branch(sub_sequence);
      
          }
 
@@ -99,7 +99,7 @@ impl<'a> Agent<'a> {
 
     fn shutdown(&self)-> Box<dyn Action>{
 
-        let mut top_sequence = Sequence::new();
+        let mut top_sequence = Concurrency::new();
         
          for activity in self.activities.iter() {
             let name= &activity.lock().unwrap().getname();
@@ -109,7 +109,7 @@ impl<'a> Agent<'a> {
             .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("shutdown_ack").unwrap().notifier().unwrap()));
 
 
-            top_sequence= top_sequence.with_step(sub_sequence);
+            top_sequence= top_sequence.with_branch(sub_sequence);
         
          }
     
@@ -126,30 +126,28 @@ impl<'a> Agent<'a> {
             Sequence::new()
             .with_step(
                self.connect_to_executor(),
-   )
+            )
                 //step
                 .with_step(
                        self.startup(),
-           )
+            )
             .with_step(
                Computation::new()
                 .with_branch(Loop::new().with_body(self.step(),))
                 .with_branch(self.shutdown()),
             ),
-   )
-
+        )
     }
 
     pub fn run(&self){
-        self.engine.start().unwrap();
         println!("reach");
 
         let pgminit = self.agent_program();
 
-        
+        self.engine.start().unwrap();
         let handle = pgminit.spawn(&self.engine).unwrap();
 
-                // Wait for the program to finish
+        // Wait for the program to finish
         let _ = handle.join().unwrap();
 
     }

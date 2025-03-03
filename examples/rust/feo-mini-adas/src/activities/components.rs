@@ -79,7 +79,7 @@ impl Activity for Camera {
 
     #[instrument(name = "Camera startup")]
     fn startup(&mut self)-> RoutineResult {
-        Ok(())}
+        debug!("Camera startup completed"); Ok(())}
 
     #[instrument(name = "Camera")]
     fn step(&mut self)-> RoutineResult {
@@ -96,7 +96,7 @@ impl Activity for Camera {
     }
 
     #[instrument(name = "Camera shutdown")]
-    fn shutdown(&mut self)-> RoutineResult {Ok(())}
+    fn shutdown(&mut self)-> RoutineResult {debug!("Camera shutdown completed"); Ok(())}
 }
 
 /// Radar activity
@@ -149,7 +149,7 @@ impl Activity for Radar {
     }
 
     #[instrument(name = "Radar startup")]
-    fn startup(&mut self)-> RoutineResult {Ok(())}
+    fn startup(&mut self)-> RoutineResult {debug!("Radar startup completed"); Ok(())}
 
     #[instrument(name = "Radar")]
     fn step(&mut self)-> RoutineResult {
@@ -166,7 +166,7 @@ impl Activity for Radar {
     }
 
     #[instrument(name = "Radar shutdown")]
-    fn shutdown(&mut self)-> RoutineResult {Ok(())}
+    fn shutdown(&mut self)-> RoutineResult {debug!("Radar shutdown completed"); Ok(())}
 }
 
 /// Neural network activity
@@ -238,7 +238,7 @@ impl Activity for NeuralNet {
     }
 
     #[instrument(name = "NeuralNet startup")]
-    fn startup(&mut self)-> RoutineResult {Ok(())}
+    fn startup(&mut self)-> RoutineResult {debug!("NeuralNet startup completed"); Ok(())}
 
     #[instrument(name = "NeuralNet")]
     fn step(&mut self)-> RoutineResult {
@@ -261,7 +261,7 @@ impl Activity for NeuralNet {
     }
 
     #[instrument(name = "NeuralNet shutdown")]
-    fn shutdown(&mut self)-> RoutineResult {Ok(())}
+    fn shutdown(&mut self)-> RoutineResult {debug!("NeuralNet shutdown completed"); Ok(())}
 }
 
 /// Emergency braking activity
@@ -306,7 +306,7 @@ impl Activity for EmergencyBraking {
     }
 
     #[instrument(name = "EmergencyBraking startup")]
-    fn startup(&mut self)-> RoutineResult {Ok(())}
+    fn startup(&mut self)-> RoutineResult {debug!("EmergencyBraking startup completed"); Ok(())}
 
     #[instrument(name = "EmergencyBraking")]
     fn step(&mut self)-> RoutineResult {
@@ -345,7 +345,7 @@ impl Activity for EmergencyBraking {
     }
 
     #[instrument(name = "EmergencyBraking shutdown")]
-    fn shutdown(&mut self)-> RoutineResult {Ok(())}
+    fn shutdown(&mut self)-> RoutineResult {debug!("EmergencyBraking shutdown completed"); Ok(())}
 }
 
 /// Brake controller activity
@@ -384,7 +384,7 @@ impl Activity for BrakeController {
     }
 
     #[instrument(name = "BrakeController startup")]
-    fn startup(&mut self)-> RoutineResult {Ok(())}
+    fn startup(&mut self)-> RoutineResult {debug!("BrakeController startup completed"); Ok(())}
 
     #[instrument(name = "BrakeController")]
     fn step(&mut self)-> RoutineResult {
@@ -403,7 +403,7 @@ impl Activity for BrakeController {
     }
 
     #[instrument(name = "BrakeController shutdown")]
-    fn shutdown(&mut self)-> RoutineResult {Ok(())}
+    fn shutdown(&mut self)-> RoutineResult {debug!("BrakeController shutdown completed"); Ok(())}
 }
 
 /// Environment renderer activity
@@ -440,7 +440,7 @@ impl Activity for EnvironmentRenderer {
     }
 
     #[instrument(name = "EnvironmentRenderer startup")]
-    fn startup(&mut self)-> RoutineResult {Ok(())}
+    fn startup(&mut self)-> RoutineResult {debug!("EnvironmentRenderer startup completed"); Ok(())}
 
     #[instrument(name = "EnvironmentRenderer")]
     fn step(&mut self)-> RoutineResult {
@@ -454,7 +454,7 @@ impl Activity for EnvironmentRenderer {
     }
 
     #[instrument(name = "EnvironmentRenderer shutdown")]
-    fn shutdown(&mut self)-> RoutineResult {Ok(())}
+    fn shutdown(&mut self)-> RoutineResult {debug!("EnvironmentRenderer shutdown completed"); Ok(())}
 }
 
 /// Lane assistant activity
@@ -514,6 +514,7 @@ impl Activity for LaneAssist {
     #[instrument(name = "LaneAssist startup")]
     fn startup(&mut self)-> RoutineResult {
         unsafe { startup_lane_assist(self.cpp_activity) };
+        debug!("LaneAssist startup completed");
         Ok(())
     }
 
@@ -542,6 +543,7 @@ impl Activity for LaneAssist {
     #[instrument(name = "LaneAssist shutdown")]
     fn shutdown(&mut self)-> RoutineResult {
         unsafe { shutdown_lane_assist(self.cpp_activity) };
+        debug!("LaneAssist shutdown completed");
         Ok(())
     }
 }
@@ -581,7 +583,7 @@ impl Activity for SteeringController {
     }
 
     #[instrument(name = "SteeringController startup")]
-    fn startup(&mut self)-> RoutineResult {Ok(())}
+    fn startup(&mut self)-> RoutineResult {debug!("SteeringController startup completed"); Ok(())}
 
     #[instrument(name = "SteeringController")]
     fn step(&mut self)-> RoutineResult {
@@ -598,7 +600,7 @@ impl Activity for SteeringController {
     }
 
     #[instrument(name = "SteeringController shutdown")]
-    fn shutdown(&mut self)-> RoutineResult {Ok(())}
+    fn shutdown(&mut self)-> RoutineResult {debug!("SteeringController shutdown completed"); Ok(())}
 }
 
 /// Generate a pseudo-random number in the specified range.

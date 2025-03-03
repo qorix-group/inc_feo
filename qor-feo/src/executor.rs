@@ -83,18 +83,30 @@ impl<'a> Executor<'a> {
     fn init(&self,names: &[&str])-> Box<dyn Action>{
 
         let mut top_sequence = Sequence::new();
-        
+
+        let mut trigger_concurrency =         Concurrency::new();
          for &name in names {
         
             let sub_sequence =         Sequence::new()
-            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("startup").unwrap().notifier().unwrap()))
-            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("startup_ack").unwrap().listener().unwrap()));
+            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("startup").unwrap().notifier().unwrap()));
         
-            top_sequence= top_sequence.with_step(sub_sequence);
+            trigger_concurrency = trigger_concurrency.with_branch(sub_sequence);
         
          }
-    
-         top_sequence
+         top_sequence = top_sequence.with_step(trigger_concurrency);
+
+         let mut ack_concurrency =         Concurrency::new();
+         for &name in names {
+        
+            let sub_sequence =         Sequence::new()
+            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("startup_ack").unwrap().listener().unwrap()));
+            ack_concurrency = ack_concurrency.with_branch(sub_sequence);
+        
+         }
+
+         top_sequence = top_sequence.with_step(ack_concurrency);
+
+         return top_sequence;
     }
 
     fn step(&self,name:&str
@@ -110,29 +122,41 @@ impl<'a> Executor<'a> {
     fn terminate(&self,names: &[&str]
     ) -> Box<dyn Action> {
         let mut top_sequence = Sequence::new();
-        
+
+        let mut trigger_concurrency =         Concurrency::new();
          for &name in names {
         
             let sub_sequence =         Sequence::new()
-            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("shutdown").unwrap().notifier().unwrap()))
-            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("shutdown_ack").unwrap().listener().unwrap()));
+            .with_step(Trigger::new(self.ipc_events.get(name).unwrap().get("shutdown").unwrap().notifier().unwrap()));
         
-            top_sequence= top_sequence.with_step(sub_sequence);
+            trigger_concurrency = trigger_concurrency.with_branch(sub_sequence);
         
          }
-    
-         top_sequence
+         top_sequence = top_sequence.with_step(trigger_concurrency);
+
+         let mut ack_concurrency =         Concurrency::new();
+         for &name in names {
+        
+            let sub_sequence =         Sequence::new()
+            .with_step(Sync::new(self.ipc_events.get(name).unwrap().get("shutdown_ack").unwrap().listener().unwrap()));
+        
+            ack_concurrency = ack_concurrency.with_branch(sub_sequence);
+        
+         }
+         top_sequence = top_sequence.with_step(ack_concurrency);
+
+         return top_sequence;
     }
 
     fn sync_to_agents(&self,agents: &[&str])-> Box<dyn Action> {
 
-        let mut top_sequence = Sequence::new();
+        let mut top_sequence = Concurrency::new();
         
          for &name in agents {
         
             let sub_sequence =Sync::new(self.agent_events.get(&format!("{}_agent", name)).unwrap().listener().unwrap());
         
-            top_sequence= top_sequence.with_step(sub_sequence);
+            top_sequence= top_sequence.with_branch(sub_sequence);
         
          }
     
@@ -154,7 +178,6 @@ impl<'a> Executor<'a> {
     }
 
     pub fn run(&self,graph: &Vec<Vec<&str>>) {
-        self.engine.start().unwrap();
 
         println!("reach exec run");
 
@@ -186,13 +209,14 @@ impl<'a> Executor<'a> {
         );
 
         println!("before run");
+        self.engine.start().unwrap();
         let handle = pgminit.spawn(&self.engine).unwrap();
         let handle_agent = self.agent.agent_program().spawn(&self.engine).unwrap();
 
         // here we wait for some time for the demo
         std::thread::sleep(Duration::from_secs(15));
 
-        println!("reached 5sec");
+        println!("reached 15sec");
 
         self.stop_trigger();
 
@@ -232,17 +256,6 @@ pub fn dependency_graph_to_execution(&self, execution_structure: &Vec<Vec<&str>>
     println!("\nFinal Execution Plan:");
     sequence as Box<dyn Action>
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 }
