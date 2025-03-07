@@ -2,16 +2,16 @@
 
 Example of a minimal ADAS activity set.
 
-Run in three terminals:
+Run in three terminals in the following order:
 
 ```sh
-cargo run --bin adas_primary
+bazel run //examples/rust/feo-mini-adas:adas_primary
 ```
 
 ```sh
-cargo run --bin adas_secondary_1
+bazel run //examples/rust/feo-mini-adas:adas_secondary_1
 ```
 
 ```sh
-cargo run --bin adas_secondary_2
+bazel run //examples/rust/feo-mini-adas:adas_secondary_2
 ```

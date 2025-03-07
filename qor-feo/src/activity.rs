@@ -4,8 +4,6 @@ use qor_rto::prelude::*;
 
 use std::fmt::Debug;
 
-use std::marker::Sync;
-
 use std::fmt::Display;
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -34,11 +32,10 @@ impl Display for ActivityId {
     }
 }
 
-
-pub trait Activity:Send{
+pub trait Activity: Send {
     fn startup(&mut self) -> RoutineResult;
     fn step(&mut self) -> RoutineResult;
     fn shutdown(&mut self) -> RoutineResult;
-    fn getname(&mut self)-> String;
+    fn getname(&mut self) -> String;
     fn id(&self) -> ActivityId;
 }

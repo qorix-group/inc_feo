@@ -6,12 +6,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use qor_rto::prelude::*;
-use std::{
-    sync::{Arc, Mutex},
-    time::Duration,
-};
-
 pub mod executor;
 
 use executor::Executor;
@@ -19,13 +13,12 @@ use executor::Executor;
 use std::collections::HashMap;
 
 fn main() {
-
-    let names = vec!["Activity1a","Activity1b","Activity2a","Activity2b"];
+    let names = vec!["Activity1a", "Activity1b", "Activity2a", "Activity2b"];
 
     let dependency_graph: HashMap<&str, Vec<&str>> = HashMap::from([
         ("Activity1a", vec![]),
-         ("Activity1a", vec!["Activity1b"]),     // B depends on A
-         ("Activity1b", vec!["Activity2a","Activity2b"]),     // 2a,b depends on b
+        ("Activity1a", vec!["Activity1b"]), // B depends on A
+        ("Activity1b", vec!["Activity2a", "Activity2b"]), // 2a,b depends on b
     ]);
 
     let exec = Executor::new(&names);
