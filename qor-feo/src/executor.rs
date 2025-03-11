@@ -18,7 +18,6 @@ fn generate_ipc_events(names: &[&str]) -> HashMap<String, HashMap<String, Event<
 
     for &name in names {
         let mut event_submap: HashMap<String, Event<IpcEvent>> = HashMap::new();
-        println!("{}", name);
 
         event_submap.insert(
             "startup".to_string(),
@@ -132,9 +131,10 @@ impl<'a> Executor<'a> {
         return top_sequence;
     }
 
-    fn step(&self, name: &str) -> Box<dyn Action> {
-        println!("name- {}", name);
-        Sequence::new()
+    fn step(&self, names: Vec<&str>) -> Box<dyn Action> {
+        let mut sequence = Sequence::new();
+        for name in names {
+            sequence = sequence
             .with_step(Trigger::new(
                 self.ipc_events
                     .get(name)
@@ -152,7 +152,9 @@ impl<'a> Executor<'a> {
                     .unwrap()
                     .listener()
                     .unwrap(),
-            ))
+            ));
+        }
+        return sequence;
     }
 
     fn terminate(&self, names: &[&str]) -> Box<dyn Action> {
@@ -223,8 +225,7 @@ impl<'a> Executor<'a> {
         self.stop_event.notifier().unwrap().notify();
     }
 
-    pub fn run(&self, graph: &Vec<Vec<&str>>) {
-        println!("reach exec run");
+    pub fn run(&self, graph: &Vec<(Vec<&str>, bool)>) {
 
         let pgminit = Program::new().with_action(
             Sequence::new()
@@ -245,20 +246,29 @@ impl<'a> Executor<'a> {
                 .with_step(self.terminate(&self.names)),
         );
 
-        println!("before run");
+        println!("Executor starts syncing with agents and execution of activity chain...");
         self.engine.start().unwrap();
         let handle = pgminit.spawn(&self.engine).unwrap();
-        let handle_agent = self.agent.agent_program().spawn(&self.engine).unwrap();
+        let pgms = self.agent.agent_program();
+        let mut handles = Vec::new();
+        for pgm in pgms {
+            handles.push(pgm.spawn(&self.engine).unwrap());
+        }
 
         // here we wait for some time for the demo
+        println!("Waiting for 15-secs...");
         std::thread::sleep(Duration::from_secs(15));
 
-        println!("reached 15sec");
+        println!("Reached 15-secs, stopping...");
 
         self.stop_trigger();
 
-        let _ = handle_agent.join().unwrap();
-        // Wait for the program to finish
+        // Wait for the agent programs to finish
+        for hndl in handles {
+            let _ = hndl.join().unwrap();
+        }
+
+        // Wait for the executor program to finish
         let _ = handle.join().unwrap();
 
         println!("Done");
@@ -267,30 +277,34 @@ impl<'a> Executor<'a> {
     /// Converts a dependency graph into an execution sequence.
     pub fn dependency_graph_to_execution(
         &self,
-        execution_structure: &Vec<Vec<&str>>,
+        execution_structure: &Vec<(Vec<&str>, bool)>
     ) -> Box<dyn Action> {
         let mut sequence = Sequence::new(); // The overall execution sequence
+        let mut concurrency_action = Concurrency::new();
+
+        let mut concurrent_block_added = false;
 
         for task_group in execution_structure {
-            if task_group.len() == 1 {
-                // If only one task, add it directly to the sequence
-                let action = self.step(task_group[0]);
-                println!("Adding Sequential Task: {}", task_group[0]);
+            if task_group.1 == false {
+                // Add the concurrency block into sequence
+                if concurrent_block_added {
+                    sequence = sequence.with_step(concurrency_action);
+                    concurrency_action = Concurrency::new();
+                    concurrent_block_added = false;
+                }
+                // sequence                
+                let action = self.step(task_group.0.clone());
                 sequence = sequence.with_step(action);
             } else {
-                // If multiple tasks, add them in a concurrency block
-                let mut concurrency_action = Concurrency::new();
-                for &task in task_group {
-                    let action = self.step(task);
-                    println!("Adding Task to Concurrency Block: {}", task);
-                    concurrency_action = concurrency_action.with_branch(action);
-                }
-                println!("Adding Concurrency Block: {:?}", task_group);
-                sequence = sequence.with_step(concurrency_action);
+                // concurrency block
+                let action = self.step(task_group.0.clone());
+                concurrency_action = concurrency_action.with_branch(action);
+                concurrent_block_added = true;
             }
         }
-
-        println!("\nFinal Execution Plan:");
+        if concurrent_block_added {
+            sequence = sequence.with_step(concurrency_action);
+        }
         sequence as Box<dyn Action>
     }
 }

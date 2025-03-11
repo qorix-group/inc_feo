@@ -32,12 +32,11 @@ fn main() {
     let environ_renderer_act: Arc<Mutex<dyn Activity>> = Arc::new(Mutex::new(
         EnvironmentRenderer::build(4.into(), TOPIC_INFERRED_SCENE),
     ));
-    // EmergencyBraking::build(id, TOPIC_INFERRED_SCENE, TOPIC_CONTROL_BRAKES);
-    // BrakeController::build(id, TOPIC_CONTROL_BRAKES);
 
     let activities = vec![neural_net_act, environ_renderer_act];
+    let concurrency = vec![true,false]; // TRUE: if the activities of the AGENT is independent within agent's context
 
-    let agent = Agent::new(2, &activities, Engine::default());
+    let agent = Agent::new(2, &activities, concurrency, Engine::default());
 
     agent.run();
 }

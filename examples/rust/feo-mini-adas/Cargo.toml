@@ -9,6 +9,8 @@ feo-log = { workspace = true }
 feo-logger = { workspace = true }
 feo-time = { workspace = true }
 feo-tracing = { workspace = true }
+qor-rto = { path = "../../../qor-rto" }
+qor-feo = { path = "../../../qor-feo" }
 
 [build-dependencies]
 cc = { workspace = true }

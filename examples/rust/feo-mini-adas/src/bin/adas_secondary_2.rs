@@ -43,8 +43,9 @@ fn main() {
     )));
 
     let activities = vec![emg_brk_act, brk_ctr_act, lane_asst_act, str_ctr_act];
+    let concurrency = vec![true, false, true, false]; // TRUE: if the activities of the AGENT is independent within agent's context
 
-    let agent = Agent::new(3, &activities, Engine::default());
+    let agent = Agent::new(3, &activities, concurrency, Engine::default());
 
     agent.run();
 

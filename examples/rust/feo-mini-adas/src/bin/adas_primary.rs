@@ -52,12 +52,14 @@ fn main() {
     ];
     let agents: Vec<&str> = vec![agent_one, agent_two, agent_three];
 
+    // VEC of activitie(s) which has to be executed in sequence, TRUE: if the activitie(s) can be executed concurrently.
     let execution_structure = vec![
-        vec![cam_activity, radar_activity], // Can run in parallel
-        vec![neural_net_act],               // Runs after Camera & Radar
-        vec![environ_renderer_act, emg_brk_act, lane_asst_act], // Runs after NeuralNet
-        vec![brk_ctr_act],                  // Runs after EmergencyBraking
-        vec![str_ctr_act],                  // Runs after BrakeController
+        (vec![cam_activity], true),
+        (vec![radar_activity], true),
+        (vec![neural_net_act], false),
+        (vec![environ_renderer_act], true),
+        (vec![emg_brk_act, brk_ctr_act], true),
+        (vec![lane_asst_act, str_ctr_act], true),
     ];
 
     //Agent setup
@@ -68,8 +70,9 @@ fn main() {
         Arc::new(Mutex::new(Radar::build(2.into(), TOPIC_RADAR_FRONT)));
 
     let activities = vec![cam_act, radar_act];
+    let concurrency = vec![true,true]; // TRUE: if the activities of the AGENT is independent within agent's context
 
-    let agent = Agent::new(1, &activities, Engine::default());
+    let agent = Agent::new(1, &activities, concurrency, Engine::default());
 
     let exec = Executor::new(
         &names,
