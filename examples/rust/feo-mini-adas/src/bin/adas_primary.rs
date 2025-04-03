@@ -91,7 +91,7 @@ fn main() {
                 let mut program = agent.create_program();
                 println!("{:?}", program);
 
-                program.run_n(5).await;
+                program.run_n(60).await;
             });
 
             let global_orch = GlobalOrchestrator::new(agents);

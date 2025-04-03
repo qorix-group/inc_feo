@@ -51,7 +51,7 @@ fn main() {
         .with_engine(
             ExecutionEngineBuilder::new()
                 .task_queue_size(256)
-                .workers(3),
+                .workers(2),
         )
         .build()
         .unwrap();
@@ -82,7 +82,7 @@ fn main() {
             let mut agent = LocalFeoAgent::new(acts, SECONDARY1_NAME);
             let mut program = agent.create_program();
 
-            program.run_n(5).await;
+            program.run_n(60).await;
             info!("Finished");
         })
         .unwrap_or_default();
