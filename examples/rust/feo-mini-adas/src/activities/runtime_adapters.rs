@@ -56,6 +56,7 @@ impl LocalFeoAgent {
 
         program = program.with_startup_hook(self.create_startup());
         program = program.with_body(self.create_body());
+        program = program.with_shutdown_notification(self.create_shutdown_notification());
         program = program.with_shutdown_hook(self.create_shutdown());
 
         program.build()
@@ -96,10 +97,16 @@ impl LocalFeoAgent {
         concurrent
     }
 
-    fn create_shutdown(&mut self) -> Box<dyn ActionTrait> {
-        let mut seq = Sequence::new().with_step(Sync::new(
+    fn create_shutdown_notification(&mut self) -> Box<dyn ActionTrait> {
+        let seq = Sequence::new().with_step(Sync::new(
             format!("{}_waiting_shutdown", self.agent_name).as_str(),
         ));
+
+        seq
+    }
+
+    fn create_shutdown(&mut self) -> Box<dyn ActionTrait> {
+        let mut seq = Sequence::new();
 
         let mut concurrent = Concurrency::new();
 
@@ -203,10 +210,19 @@ impl GlobalOrchestrator {
         seq
     }
 
+    // This can be used to stop orchestration from another application for demo.
+    fn orch_shutdown_notification(&self) -> Box<dyn ActionTrait> {
+        let seq = Sequence::new_with_id(NamedId::new_static("shutdown"))
+            .with_step(Sync::new("qorix_orch_shutdown_event"));
+
+        seq
+    }
+
     pub async fn run(&self, graph: &Vec<(Vec<&str>, bool)>) {
         let mut program = ProgramBuilder::new("main")
             .with_startup_hook(self.startup())
             .with_body(self.generate_body(&graph))
+            .with_shutdown_notification(self.orch_shutdown_notification())
             .with_shutdown_hook(self.shutdown())
             .with_cycle_time(self.cycle)
             .build();
