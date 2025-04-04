@@ -7,9 +7,10 @@ use async_runtime::{
     scheduler::execution_engine::ExecutionEngineBuilder,
 };
 use feo_mini_adas::activities::{
-    components::{TempActivityTrait, SECONDARY1_NAME},
+    components::SECONDARY1_NAME,
     runtime_adapters::{activity_into_invokes, LocalFeoAgent},
 };
+use foundation::threading::thread_wait_barrier::*;
 
 use configuration::secondary_agent::Builder;
 use feo::configuration::worker_pool;
@@ -34,13 +35,10 @@ const AGENT_ID: AgentId = AgentId::new(101);
 const PRIMARY_ADDR: SocketAddr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 8081);
 
 fn main() {
-    // feo_logger::init(LevelFilter::Debug, true, true);
-    // feo_tracing::init(feo_tracing::LevelFilter::TRACE);
-
     let mut logger = TracingLibraryBuilder::new()
-        .global_log_level(Level::TRACE)
+        .global_log_level(Level::DEBUG)
         .enable_tracing(TraceScope::SystemScope)
-        .enable_logging(true)
+        .enable_logging(false)
         .build();
 
     logger.init_log_trace();
@@ -51,7 +49,7 @@ fn main() {
         .with_engine(
             ExecutionEngineBuilder::new()
                 .task_queue_size(256)
-                .workers(3),
+                .workers(2),
         )
         .build()
         .unwrap();
@@ -60,6 +58,10 @@ fn main() {
         .lock()
         .unwrap()
         .create_polling_thread();
+
+    // Since runtime `enter_engine` is now not blocking, we do it manually here.
+    let waiter = Arc::new(ThreadWaitBarrier::new(1));
+    let notifier = waiter.get_notifier().unwrap();
 
     runtime
         .enter_engine(async {
@@ -84,8 +86,11 @@ fn main() {
 
             program.run().await;
             info!("Finished");
+            notifier.ready();
         })
         .unwrap_or_default();
 
-    std::thread::sleep(Duration::new(2000, 0));
+    waiter
+        .wait_for_all(Duration::new(2000, 0))
+        .unwrap_or_default();
 }

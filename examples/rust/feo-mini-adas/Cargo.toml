@@ -13,6 +13,7 @@ feo-tracing = { workspace = true }
 async_runtime = { workspace = true }
 orchestration = { workspace = true }
 logging_tracing = { workspace = true }
+foundation = { workspace = true }
 
 [build-dependencies]
 cc = { workspace = true }

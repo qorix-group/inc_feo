@@ -177,9 +177,9 @@ pub struct NeuralNet {
 }
 
 unsafe impl Send for NeuralNet {} // TODO: Both Feo and runtime has to fix this, runtime will support not send soon, but maybe
-                                  // feo itself shall not provoke !Send without any good reason
+                                  // feo itself shall not provoke !Send without any good reason - issues comes out of iceoryx2
 
-pub trait TempActivityTrait: Send {
+pub trait ActivityAdapterTrait: Send {
     type T; // Activity Type
 
     ///
@@ -630,7 +630,7 @@ fn sleep_random() {
     ));
 }
 
-impl TempActivityTrait for EnvironmentRenderer {
+impl ActivityAdapterTrait for EnvironmentRenderer {
     type T = EnvironmentRenderer;
 
     fn step_runtime(
@@ -657,7 +657,7 @@ impl TempActivityTrait for EnvironmentRenderer {
     }
 }
 
-impl TempActivityTrait for NeuralNet {
+impl ActivityAdapterTrait for NeuralNet {
     type T = NeuralNet;
 
     fn step_runtime(
@@ -684,7 +684,7 @@ impl TempActivityTrait for NeuralNet {
     }
 }
 
-impl TempActivityTrait for EmergencyBraking {
+impl ActivityAdapterTrait for EmergencyBraking {
     type T = EmergencyBraking;
 
     fn step_runtime(
@@ -711,7 +711,7 @@ impl TempActivityTrait for EmergencyBraking {
     }
 }
 
-impl TempActivityTrait for BrakeController {
+impl ActivityAdapterTrait for BrakeController {
     type T = BrakeController;
 
     fn step_runtime(
@@ -737,7 +737,7 @@ impl TempActivityTrait for BrakeController {
     }
 }
 
-impl TempActivityTrait for LaneAssist {
+impl ActivityAdapterTrait for LaneAssist {
     type T = LaneAssist;
 
     fn step_runtime(
@@ -764,7 +764,7 @@ impl TempActivityTrait for LaneAssist {
     }
 }
 
-impl TempActivityTrait for SteeringController {
+impl ActivityAdapterTrait for SteeringController {
     type T = SteeringController;
 
     async fn step_runtime(instance: Arc<Mutex<Self::T>>) -> ActionResult {
@@ -787,7 +787,7 @@ impl TempActivityTrait for SteeringController {
     }
 }
 
-impl TempActivityTrait for Radar {
+impl ActivityAdapterTrait for Radar {
     type T = Radar;
 
     fn step_runtime(
@@ -814,7 +814,7 @@ impl TempActivityTrait for Radar {
     }
 }
 
-impl TempActivityTrait for Camera {
+impl ActivityAdapterTrait for Camera {
     type T = Camera;
 
     fn step_runtime(

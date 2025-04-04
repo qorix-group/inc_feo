@@ -568,6 +568,7 @@ dependencies = [
  "feo-logger",
  "feo-time",
  "feo-tracing",
+ "foundation",
  "logging_tracing",
  "orchestration",
 ]

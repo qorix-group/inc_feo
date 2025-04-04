@@ -1,16 +1,32 @@
+// Copyright (c) 2025 Qorix GmbH
+//
+// This program and the accompanying materials are made available under the
+// terms of the Apache License, Version 2.0 which is available at
+// https://www.apache.org/licenses/LICENSE-2.0.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+//
+// Well known issues:
+// - currently activity must be hidden behind Mutex - subject to be lifted
+// - !Send issues due to iceoryx
+// - ...
+//
+
 use std::{
-    fmt::format,
     sync::{Arc, Mutex},
     time::Duration,
 };
 
 use orchestration::{
-    actions::event::Event,
     prelude::*,
     program::{Program, ProgramBuilder},
 };
 
-use super::components::TempActivityTrait;
+use logging_tracing::prelude::*;
+
+use super::components::ActivityAdapterTrait;
 
 pub struct ActivityDetails {
     binded_hooks: (
@@ -27,7 +43,7 @@ pub struct ActivityDetails {
 ///
 pub fn activity_into_invokes<T>(obj: &Arc<Mutex<T>>) -> ActivityDetails
 where
-    T: 'static + Send + TempActivityTrait<T = T>,
+    T: 'static + Send + ActivityAdapterTrait<T = T>,
 {
     let start = Invoke::from_arc(obj.clone(), T::start);
     let step = Invoke::from_arc_mtx(obj.clone(), T::step_runtime);
@@ -38,6 +54,9 @@ where
     }
 }
 
+///
+/// Responsible to react on request coming from primary process
+///
 pub struct LocalFeoAgent {
     activities: Vec<ActivityDetails>,
     agent_name: &'static str,
@@ -122,6 +141,9 @@ impl LocalFeoAgent {
     }
 }
 
+///
+/// Responsible for controlling Task Chain execution across processes according to provided configuration
+///
 pub struct GlobalOrchestrator {
     agents: Vec<String>,
     cycle: Duration,
@@ -132,8 +154,24 @@ impl GlobalOrchestrator {
         Self { agents, cycle }
     }
 
+    pub async fn run(&self, graph: &Vec<(Vec<&str>, bool)>) {
+        let mut program = ProgramBuilder::new("main")
+            .with_startup_hook(self.startup())
+            .with_body(self.generate_body(&graph))
+            .with_shutdown_notification(self.orch_shutdown_notification())
+            .with_shutdown_hook(self.shutdown())
+            .with_cycle_time(self.cycle)
+            .build();
+
+        info!("Executor starts syncing with agents and execution of activity chain 20 times for demo...");
+        info!("{:?}", program);
+
+        program.run_n(20).await;
+
+        info!("Done");
+    }
+
     fn sync_to_agents(&self) -> Box<dyn ActionTrait> {
-        // TODO: This shall also bo sequence really as we don't care who wil be first and who last
         let mut top = Concurrency::new_with_id(NamedId::new_static("sync_to_agents"));
 
         for name in &self.agents {
@@ -218,29 +256,8 @@ impl GlobalOrchestrator {
         seq
     }
 
-    pub async fn run(&self, graph: &Vec<(Vec<&str>, bool)>) {
-        let mut program = ProgramBuilder::new("main")
-            .with_startup_hook(self.startup())
-            .with_body(self.generate_body(&graph))
-            .with_shutdown_notification(self.orch_shutdown_notification())
-            .with_shutdown_hook(self.shutdown())
-            .with_cycle_time(self.cycle)
-            .build();
-
-        println!("Executor starts syncing with agents and execution of activity chain 20 times for demo...");
-
-        print!("{:?}", program);
-
-        program.run_n(20).await;
-
-        println!("Done");
-    }
-
     // Converts a dependency graph into an execution sequence.
-    pub fn generate_body(
-        &self,
-        execution_structure: &Vec<(Vec<&str>, bool)>,
-    ) -> Box<dyn ActionTrait> {
+    fn generate_body(&self, execution_structure: &Vec<(Vec<&str>, bool)>) -> Box<dyn ActionTrait> {
         let mut sequence = Sequence::new(); // The overall execution sequence
         let mut concurrency_action = Concurrency::new();
 

@@ -18,6 +18,7 @@ use feo_mini_adas::{
     },
     config::{self, *},
 };
+use foundation::threading::thread_wait_barrier::*;
 use logging_tracing::{prelude::*, TraceScope, TracingLibraryBuilder};
 use orchestration::prelude::Event;
 use std::{
@@ -36,9 +37,9 @@ fn main() {
     // feo_tracing::init(feo_tracing::LevelFilter::TRACE);
 
     let mut logger = TracingLibraryBuilder::new()
-        .global_log_level(Level::TRACE)
+        .global_log_level(Level::DEBUG)
         .enable_tracing(TraceScope::SystemScope)
-        .enable_logging(true)
+        .enable_logging(false)
         .build();
 
     logger.init_log_trace();
@@ -49,7 +50,7 @@ fn main() {
         .with_engine(
             ExecutionEngineBuilder::new()
                 .task_queue_size(256)
-                .workers(3),
+                .workers(2),
         )
         .build()
         .unwrap();
@@ -58,6 +59,10 @@ fn main() {
         .lock()
         .unwrap()
         .create_polling_thread();
+
+    // Since runtime `enter_engine` is now not blocking, we do it manually here.
+    let waiter = Arc::new(ThreadWaitBarrier::new(1));
+    let notifier = waiter.get_notifier().unwrap();
 
     runtime
         .enter_engine(async {
@@ -93,8 +98,11 @@ fn main() {
 
             program.run().await;
             info!("Finished");
+            notifier.ready();
         })
         .unwrap_or_default();
 
-    std::thread::sleep(Duration::new(2000, 0));
+    waiter
+        .wait_for_all(Duration::new(2000, 0))
+        .unwrap_or_default();
 }

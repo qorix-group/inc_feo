@@ -19,6 +19,7 @@ use feo_mini_adas::activities::runtime_adapters::{
 };
 use feo_mini_adas::config::{self, *};
 use feo_time::Duration;
+use foundation::threading::thread_wait_barrier::*;
 use logging_tracing::prelude::*;
 use logging_tracing::{TraceScope, TracingLibraryBuilder};
 use orchestration::prelude::Event;
@@ -28,24 +29,21 @@ use std::sync::{Arc, Mutex};
 
 const AGENT_ID: AgentId = AgentId::new(100);
 const BIND_ADDR: SocketAddr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 8081);
-const DEFAULT_FEO_CYCLE_TIME: Duration = Duration::from_secs(5);
+const DEFAULT_FEO_CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() {
+    let params = Params::from_args();
+
     //Initialize in LogMode with AppScope
     let mut logger = TracingLibraryBuilder::new()
-        .global_log_level(Level::TRACE)
+        .global_log_level(Level::DEBUG)
         .enable_tracing(TraceScope::SystemScope)
         .enable_logging(true)
         .build();
 
     logger.init_log_trace();
 
-    // feo_logger::init(LevelFilter::Debug, true, true);
-    // feo_tracing::init(feo_tracing::LevelFilter::TRACE);
-
     let _topic_guards = initialize_topics();
-
-    info!("Starting primary agent {AGENT_ID}. Waiting for connections",);
 
     let agents: Vec<String> = vec![
         PRIMARY_NAME.to_string(),
@@ -67,9 +65,13 @@ fn main() {
         .unwrap()
         .create_polling_thread();
 
+    // Since runtime `enter_engine` is now not blocking, we do it manually here.
+    let waiter = Arc::new(ThreadWaitBarrier::new(1));
+    let notifier = waiter.get_notifier().unwrap();
+
     runtime
-        .enter_engine(async {
-            // VEC of activitie(s) which has to be executed in sequence, TRUE: if the activitie(s) can be executed concurrently.
+        .enter_engine(async move {
+            // VEC of activities(s) which has to be executed in sequence, TRUE: if the activities(s) can be executed concurrently.
             let execution_structure = vec![
                 (vec![CAM_ACTIVITY_NAME], true),
                 (vec![RADAR_ACTIVITY_NAME], true),
@@ -94,14 +96,18 @@ fn main() {
                 program.run().await;
             });
 
-            let global_orch = GlobalOrchestrator::new(agents, DEFAULT_FEO_CYCLE_TIME);
+            let global_orch = GlobalOrchestrator::new(agents, params.feo_cycle_time);
 
             global_orch.run(&execution_structure).await;
             local_agent_program.await;
+
+            notifier.ready();
         })
         .unwrap_or_default();
 
-    std::thread::sleep(Duration::new(2000, 0));
+    waiter
+        .wait_for_all(Duration::new(2000, 0))
+        .unwrap_or_default();
 }
 
 /// Parameters of the primary
