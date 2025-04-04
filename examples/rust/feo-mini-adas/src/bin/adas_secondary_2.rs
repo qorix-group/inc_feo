@@ -91,7 +91,7 @@ fn main() {
             let mut program = agent.create_program();
             info!("{:?}", program);
 
-            program.run_n(5).await;
+            program.run().await;
             info!("Finished");
         })
         .unwrap_or_default();

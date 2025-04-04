@@ -91,10 +91,10 @@ fn main() {
                 let mut program = agent.create_program();
                 println!("{:?}", program);
 
-                program.run_n(5).await;
+                program.run().await;
             });
 
-            let global_orch = GlobalOrchestrator::new(agents);
+            let global_orch = GlobalOrchestrator::new(agents, DEFAULT_FEO_CYCLE_TIME);
 
             global_orch.run(&execution_structure).await;
             local_agent_program.await;

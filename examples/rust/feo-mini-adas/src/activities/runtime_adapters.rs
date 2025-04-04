@@ -1,6 +1,7 @@
 use std::{
     fmt::format,
     sync::{Arc, Mutex},
+    time::Duration,
 };
 
 use orchestration::{
@@ -116,11 +117,12 @@ impl LocalFeoAgent {
 
 pub struct GlobalOrchestrator {
     agents: Vec<String>,
+    cycle: Duration,
 }
 
 impl GlobalOrchestrator {
-    pub fn new(agents: Vec<String>) -> Self {
-        Self { agents }
+    pub fn new(agents: Vec<String>, cycle: Duration) -> Self {
+        Self { agents, cycle }
     }
 
     fn sync_to_agents(&self) -> Box<dyn ActionTrait> {
@@ -206,13 +208,14 @@ impl GlobalOrchestrator {
             .with_startup_hook(self.startup())
             .with_body(self.generate_body(&graph))
             .with_shutdown_hook(self.shutdown())
+            .with_cycle_time(self.cycle)
             .build();
 
-        println!("Executor starts syncing with agents and execution of activity chain...");
+        println!("Executor starts syncing with agents and execution of activity chain 20 times for demo...");
 
         print!("{:?}", program);
 
-        program.run_n(5).await;
+        program.run_n(20).await;
 
         println!("Done");
     }
