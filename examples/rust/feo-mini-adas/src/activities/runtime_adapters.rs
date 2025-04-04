@@ -29,7 +29,7 @@ where
     T: 'static + Send + TempActivityTrait<T = T>,
 {
     let start = Invoke::from_arc(obj.clone(), T::start);
-    let step = Invoke::from_arc_a(obj.clone(), T::step_runtime);
+    let step = Invoke::from_arc_mtx(obj.clone(), T::step_runtime);
     let stop = Invoke::from_arc(obj.clone(), T::stop);
     ActivityDetails {
         binded_hooks: (Some(start), Some(step), Some(stop)),
@@ -96,10 +96,9 @@ impl LocalFeoAgent {
     }
 
     fn create_shutdown(&mut self) -> Box<dyn ActionTrait> {
-        let mut seq = Sequence::new()
-            .with_step(Sync::new(
-                format!("{}_waiting_shutdown", self.agent_name).as_str(),
-            ));
+        let mut seq = Sequence::new().with_step(Sync::new(
+            format!("{}_waiting_shutdown", self.agent_name).as_str(),
+        ));
 
         let mut concurrent = Concurrency::new();
 
