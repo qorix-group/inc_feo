@@ -49,6 +49,14 @@ crate.from_cargo(
 )
 use_repo(crate, "cargo")
 
+bazel_dep(name = "qor-runtime", version = "1.0.0")
+
+git_override(
+    module_name = "qor-runtime",
+    remote = "https://github.com/qorix-group/qor-runtime.git",
+    branch = "pawelrutkq_test",
+)
+
 # To update, run `bazel run @rules_rust//tools/rust_analyzer:gen_rust_project`.
 rust_analyzer = use_extension("@rules_rust//tools/rust_analyzer:deps.bzl", "rust")
 rust_analyzer.rust_analyzer_dependencies()
