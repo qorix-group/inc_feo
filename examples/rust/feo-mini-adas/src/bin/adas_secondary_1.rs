@@ -2,37 +2,21 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use async_runtime::{
-    runtime::{runtime::AsyncRuntimeBuilder, *},
-    scheduler::execution_engine::ExecutionEngineBuilder,
-};
-use feo_mini_adas::activities::{
-    components::SECONDARY1_NAME,
-    runtime_adapters::{activity_into_invokes, LocalFeoAgent},
-};
-use foundation::threading::thread_wait_barrier::*;
-
-use configuration::secondary_agent::Builder;
-use feo::configuration::worker_pool;
+use async_runtime::runtime::runtime::AsyncRuntimeBuilder;
+use async_runtime::scheduler::execution_engine::ExecutionEngineBuilder;
 use feo::prelude::*;
-use feo_log::{info, LevelFilter};
-use feo_mini_adas::{
-    activities::components::{EnvironmentRenderer, NeuralNet},
-    config::{self, *},
-};
-
-use logging_tracing::{prelude::*, TracingLibrary};
+use feo_log::info;
+use feo_mini_adas::activities::components::{EnvironmentRenderer, NeuralNet, SECONDARY1_NAME};
+use feo_mini_adas::activities::runtime_adapters::{activity_into_invokes, LocalFeoAgent};
+use feo_mini_adas::config::*;
+use foundation::threading::thread_wait_barrier::*;
+use logging_tracing::prelude::*;
 use orchestration::actions::event::Event;
-use std::{
-    net::{IpAddr, Ipv4Addr, SocketAddr},
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 /// This agent's ID
 const AGENT_ID: AgentId = AgentId::new(101);
-/// Address of the primary agent
-const PRIMARY_ADDR: SocketAddr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 8081);
 
 fn main() {
     let mut logger = TracingLibraryBuilder::new()
@@ -77,9 +61,10 @@ fn main() {
                 TOPIC_INFERRED_SCENE,
             )));
 
-            let mut acts = Vec::new();
-            acts.push(activity_into_invokes(&neural_net_act));
-            acts.push(activity_into_invokes(&environ_renderer_act));
+            let acts = vec![
+                activity_into_invokes(&neural_net_act),
+                activity_into_invokes(&environ_renderer_act),
+            ];
 
             let mut agent = LocalFeoAgent::new(acts, SECONDARY1_NAME);
             let mut program = agent.create_program();

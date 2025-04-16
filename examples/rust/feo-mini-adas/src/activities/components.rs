@@ -633,13 +633,9 @@ fn sleep_random() {
 impl ActivityAdapterTrait for EnvironmentRenderer {
     type T = EnvironmentRenderer;
 
-    fn step_runtime(
-        instance: Arc<Mutex<Self::T>>,
-    ) -> impl std::future::Future<Output = ActionResult> + Send {
-        async move {
-            instance.lock().unwrap().step();
-            Ok(())
-        }
+    async fn step_runtime(instance: Arc<Mutex<Self::T>>) -> ActionResult {
+        instance.lock().unwrap().step();
+        Ok(())
     }
 
     fn start(&mut self) -> ActionResult {
@@ -660,13 +656,9 @@ impl ActivityAdapterTrait for EnvironmentRenderer {
 impl ActivityAdapterTrait for NeuralNet {
     type T = NeuralNet;
 
-    fn step_runtime(
-        instance: Arc<Mutex<Self::T>>,
-    ) -> impl std::future::Future<Output = ActionResult> + Send {
-        async move {
-            instance.lock().unwrap().step();
-            Ok(())
-        }
+    async fn step_runtime(instance: Arc<Mutex<Self::T>>) -> ActionResult {
+        instance.lock().unwrap().step();
+        Ok(())
     }
 
     fn start(&mut self) -> ActionResult {
@@ -687,13 +679,9 @@ impl ActivityAdapterTrait for NeuralNet {
 impl ActivityAdapterTrait for EmergencyBraking {
     type T = EmergencyBraking;
 
-    fn step_runtime(
-        instance: Arc<Mutex<Self::T>>,
-    ) -> impl std::future::Future<Output = ActionResult> + Send {
-        async move {
-            instance.lock().unwrap().step();
-            Ok(())
-        }
+    async fn step_runtime(instance: Arc<Mutex<Self::T>>) -> ActionResult {
+        instance.lock().unwrap().step();
+        Ok(())
     }
 
     fn start(&mut self) -> ActionResult {
@@ -714,13 +702,9 @@ impl ActivityAdapterTrait for EmergencyBraking {
 impl ActivityAdapterTrait for BrakeController {
     type T = BrakeController;
 
-    fn step_runtime(
-        instance: Arc<Mutex<Self::T>>,
-    ) -> impl std::future::Future<Output = ActionResult> + Send {
-        async move {
-            instance.lock().unwrap().step();
-            Ok(())
-        }
+    async fn step_runtime(instance: Arc<Mutex<Self::T>>) -> ActionResult {
+        instance.lock().unwrap().step();
+        Ok(())
     }
     fn start(&mut self) -> ActionResult {
         self.startup();
@@ -740,13 +724,9 @@ impl ActivityAdapterTrait for BrakeController {
 impl ActivityAdapterTrait for LaneAssist {
     type T = LaneAssist;
 
-    fn step_runtime(
-        instance: Arc<Mutex<Self::T>>,
-    ) -> impl std::future::Future<Output = ActionResult> + Send {
-        async move {
-            instance.lock().unwrap().step();
-            Ok(())
-        }
+    async fn step_runtime(instance: Arc<Mutex<Self::T>>) -> ActionResult {
+        instance.lock().unwrap().step();
+        Ok(())
     }
 
     fn start(&mut self) -> ActionResult {
@@ -790,13 +770,9 @@ impl ActivityAdapterTrait for SteeringController {
 impl ActivityAdapterTrait for Radar {
     type T = Radar;
 
-    fn step_runtime(
-        instance: Arc<Mutex<Self::T>>,
-    ) -> impl std::future::Future<Output = ActionResult> + Send {
-        async move {
-            instance.lock().unwrap().step();
-            Ok(())
-        }
+    async fn step_runtime(instance: Arc<Mutex<Self::T>>) -> ActionResult {
+        instance.lock().unwrap().step();
+        Ok(())
     }
 
     fn start(&mut self) -> ActionResult {
@@ -817,13 +793,9 @@ impl ActivityAdapterTrait for Radar {
 impl ActivityAdapterTrait for Camera {
     type T = Camera;
 
-    fn step_runtime(
-        instance: Arc<Mutex<Self::T>>,
-    ) -> impl std::future::Future<Output = ActionResult> + Send {
-        async move {
-            instance.lock().unwrap().step();
-            Ok(())
-        }
+    async fn step_runtime(instance: Arc<Mutex<Self::T>>) -> ActionResult {
+        instance.lock().unwrap().step();
+        Ok(())
     }
 
     fn start(&mut self) -> ActionResult {
@@ -841,15 +813,15 @@ impl ActivityAdapterTrait for Camera {
     }
 }
 
-pub const CAM_ACTIVITY_NAME: &'static str = "cam_activity";
-pub const RADAR_ACTIVITY_NAME: &'static str = "radar_activity";
-pub const NEURAL_NET_ACTIVITY_NAME: &'static str = "neuralnet_activity";
-pub const ENV_READER_ACTIVITY_NAME: &'static str = "env_reader_activity";
-pub const EMG_BREAK_ACTIVITY_NAME: &'static str = "emg_break_activity";
-pub const BREAK_CTL_ACTIVITY_NAME: &'static str = "break_ctl_activity";
-pub const LANE_ASST_ACTIVITY_NAME: &'static str = "lane_asst_activity";
-pub const STR_CTL_ACTIVITY_NAME: &'static str = "str_ctl_activity";
+pub const CAM_ACTIVITY_NAME: &str = "cam_activity";
+pub const RADAR_ACTIVITY_NAME: &str = "radar_activity";
+pub const NEURAL_NET_ACTIVITY_NAME: &str = "neuralnet_activity";
+pub const ENV_READER_ACTIVITY_NAME: &str = "env_reader_activity";
+pub const EMG_BREAK_ACTIVITY_NAME: &str = "emg_break_activity";
+pub const BREAK_CTL_ACTIVITY_NAME: &str = "break_ctl_activity";
+pub const LANE_ASST_ACTIVITY_NAME: &str = "lane_asst_activity";
+pub const STR_CTL_ACTIVITY_NAME: &str = "str_ctl_activity";
 
-pub const PRIMARY_NAME: &'static str = "primary_agent";
-pub const SECONDARY1_NAME: &'static str = "secondary1_agent";
-pub const SECONDARY2_NAME: &'static str = "secondary2_agent";
+pub const PRIMARY_NAME: &str = "primary_agent";
+pub const SECONDARY1_NAME: &str = "secondary1_agent";
+pub const SECONDARY2_NAME: &str = "secondary2_agent";

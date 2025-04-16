@@ -13,26 +13,17 @@
 // - !Send issues due to iceoryx
 // - ...
 //
-use std::{
-    sync::{Arc, Mutex},
-    time::Duration,
-};
-
-use orchestration::{
-    prelude::*,
-    program::{Program, ProgramBuilder},
-};
-
 use super::components::ActivityAdapterTrait;
 use logging_tracing::prelude::*;
+use orchestration::prelude::*;
+use orchestration::program::{Program, ProgramBuilder};
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
+
+type MaybeAction = Option<Box<dyn ActionTrait>>;
 
 pub struct ActivityDetails {
-    binded_hooks: (
-        Option<Box<dyn ActionTrait>>,
-        Option<Box<dyn ActionTrait>>,
-        Option<Box<dyn ActionTrait>>,
-    ),
-
+    binded_hooks: (MaybeAction, MaybeAction, MaybeAction),
     name: &'static str,
 }
 
@@ -155,7 +146,7 @@ impl GlobalOrchestrator {
     pub async fn run(&self, graph: &Vec<(Vec<&str>, bool)>) {
         let mut program = ProgramBuilder::new("main")
             .with_startup_hook(self.startup())
-            .with_body(self.generate_body(&graph))
+            .with_body(self.generate_body(graph))
             .with_shutdown_notification(self.orch_shutdown_notification())
             .with_shutdown_hook(self.shutdown())
             .with_cycle_time(self.cycle)
@@ -206,12 +197,10 @@ impl GlobalOrchestrator {
     }
 
     fn startup(&self) -> Box<dyn ActionTrait> {
-        let seq = Sequence::new_with_id(NamedId::new_static("startup"))
+        Sequence::new_with_id(NamedId::new_static("startup"))
             .with_step(self.sync_to_agents())
             .with_step(self.release_agents())
-            .with_step(self.wait_startup_completed());
-
-        seq
+            .with_step(self.wait_startup_completed())
     }
 
     fn shutdown_agents(&self) -> Box<dyn ActionTrait> {
@@ -239,19 +228,15 @@ impl GlobalOrchestrator {
     }
 
     fn shutdown(&self) -> Box<dyn ActionTrait> {
-        let seq = Sequence::new_with_id(NamedId::new_static("shutdown"))
+        Sequence::new_with_id(NamedId::new_static("shutdown"))
             .with_step(self.shutdown_agents())
-            .with_step(self.wait_shutdown_completed());
-
-        seq
+            .with_step(self.wait_shutdown_completed())
     }
 
     // This can be used to stop orchestration from another application for demo.
     fn orch_shutdown_notification(&self) -> Box<dyn ActionTrait> {
-        let seq = Sequence::new_with_id(NamedId::new_static("shutdown"))
-            .with_step(Sync::new("qorix_orch_shutdown_event"));
-
-        seq
+        Sequence::new_with_id(NamedId::new_static("shutdown"))
+            .with_step(Sync::new("qorix_orch_shutdown_event"))
     }
 
     // Converts a dependency graph into an execution sequence.
@@ -262,7 +247,7 @@ impl GlobalOrchestrator {
         let mut concurrent_block_added = false;
 
         for task_group in execution_structure {
-            if task_group.1 == false {
+            if !task_group.1 {
                 // Add the concurrency block into sequence
                 if concurrent_block_added {
                     sequence = sequence.with_step(concurrency_action);
@@ -292,6 +277,6 @@ impl GlobalOrchestrator {
                 .with_step(Trigger::new(format!("{}_start", name).as_str()))
                 .with_step(Sync::new(format!("{}_done", name).as_str()));
         }
-        return sequence;
+        sequence
     }
 }

@@ -2,13 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::activities::components::{
-    BrakeController, Camera, EmergencyBraking, EnvironmentRenderer, LaneAssist, NeuralNet, Radar,
-    SteeringController,
-};
 use crate::activities::messages::{BrakeInstruction, CameraImage, RadarScan, Scene, Steering};
 use configuration::topics::Direction;
-use feo::activity::ActivityIdAndBuilder;
 use feo::com::{init_topic, TopicHandle};
 use feo::configuration::topics::TopicSpecification;
 use feo::prelude::*;
