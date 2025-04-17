@@ -63,6 +63,17 @@ rust_binary(
     ],
 )
 
+rust_binary(
+    name = "adas_single_process",
+    srcs = [
+        "src/bin/adas_single_process.rs",
+    ],
+    visibility = ["//visibility:public"],
+    deps = _COMMON_DEPS + [
+        ":libfeo_mini_adas_rust",
+    ],
+)
+
 cc_library(
     name = "libactivities_cc",
     srcs = [
