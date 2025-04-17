@@ -3,7 +3,7 @@ members = [
     "examples/rust/feo-mini-adas",
     "examples/rust/greeter",
     "examples/rust/greetings",
-  #  "examples/rust/mini-adas-recording",
+    # "examples/rust/mini-adas-recording",
     "feo",
     "feo-log",
     "feo-logger",
@@ -16,11 +16,10 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
-
-async_runtime = { git = "https://github.com/qorix-group/qor-runtime.git" , branch = "feature/runtime" }
-orchestration = { git = "https://github.com/qorix-group/qor-runtime.git" , branch = "feature/runtime" }
-logging_tracing = { git = "https://github.com/qorix-group/qor-runtime.git" , branch = "feature/runtime" }
-foundation  = { git = "https://github.com/qorix-group/qor-runtime.git", branch = "feature/runtime"  }
+async_runtime = { git = "https://github.com/qorix-group/qor-runtime.git" , branch = "feature/runtime_with_bazel" }
+orchestration = { git = "https://github.com/qorix-group/qor-runtime.git" , branch = "feature/runtime_with_bazel" }
+logging_tracing = { git = "https://github.com/qorix-group/qor-runtime.git" , branch = "feature/runtime_with_bazel" }
+foundation  = { git = "https://github.com/qorix-group/qor-runtime.git", branch = "feature/runtime_with_bazel"  }
 
 anyhow = "1.0.49"
 argh = "0.1.13"
@@ -29,7 +28,7 @@ bytes = "1.9.0"
 cc = "1.2.7"
 console = "0.15.10"
 env_logger = "0.11.5"
-feo = { path = "feo", default-features = false }
+feo = { path = "feo", default-features = false, features = ["ipc_iceoryx2"] }
 feo-log = { path = "feo-log" }
 feo-logger = { path = "feo-logger" }
 feo-time = { path = "feo-time" }
@@ -44,7 +43,7 @@ libc = "0.2"
 log = { version = "0.4.22", features = ["std"] }
 mio = { version = "1.0.2", features = ["net", "os-poll"] }
 perfetto-model = { path = "perfetto-model" }
-postcard = "1.1.1"
+postcard = { version = "1.1.1", features = ["experimental-derive"]}
 prost = "0.13.4"
 prost-build = "0.13.4"
 rand = "0.8.5"
@@ -65,8 +64,17 @@ tokio-util = { version = "0.7.13", features = ["codec", "net"] }
 tracing = { version = "0.1.41", features = [
     "attributes",
 ], default-features = false }
+tracing-perfetto-sdk-layer = "0.12.0"
+tracing-perfetto-sdk-schema = "0.12.0"
+tracing-perfetto-sdk-sys = "0.12.0"
 tracing-serde-structured = "0.4.0"
 tracing-subscriber = { version = "0.3.19", default-features = false }
+
+# TODO: Pin the revision id to make builds reproducible
+[patch.crates-io]
+tracing-perfetto-sdk-layer = { git = "https://github.com/qorix-group/tracing-perfetto-sdk.git", branch = "bazel_build" }
+tracing-perfetto-sdk-schema = { git = "https://github.com/qorix-group/tracing-perfetto-sdk.git", branch = "bazel_build" }
+tracing-perfetto-sdk-sys = { git = "https://github.com/qorix-group/tracing-perfetto-sdk.git", branch = "bazel_build" }
 
 [profile.profiling]
 inherits = "release"

@@ -4,11 +4,6 @@
 
 use async_runtime::runtime::runtime::AsyncRuntimeBuilder;
 use async_runtime::scheduler::execution_engine::ExecutionEngineBuilder;
-use configuration::primary_agent::Builder;
-use feo::configuration::worker_pool;
-use feo::prelude::*;
-use feo::signalling::{channel, Signal};
-use feo_log::{info, LevelFilter};
 use feo_mini_adas::activities::components::{
     Camera, Radar, BREAK_CTL_ACTIVITY_NAME, CAM_ACTIVITY_NAME, EMG_BREAK_ACTIVITY_NAME,
     ENV_READER_ACTIVITY_NAME, LANE_ASST_ACTIVITY_NAME, NEURAL_NET_ACTIVITY_NAME, PRIMARY_NAME,
@@ -17,18 +12,14 @@ use feo_mini_adas::activities::components::{
 use feo_mini_adas::activities::runtime_adapters::{
     activity_into_invokes, GlobalOrchestrator, LocalFeoAgent,
 };
-use feo_mini_adas::config::{self, *};
+use feo_mini_adas::config::*;
 use feo_time::Duration;
 use foundation::threading::thread_wait_barrier::*;
 use logging_tracing::prelude::*;
 use logging_tracing::{TraceScope, TracingLibraryBuilder};
 use orchestration::prelude::Event;
-
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::{Arc, Mutex};
 
-const AGENT_ID: AgentId = AgentId::new(100);
-const BIND_ADDR: SocketAddr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 8081);
 const DEFAULT_FEO_CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() {
@@ -85,9 +76,10 @@ fn main() {
                 let cam_act = Arc::new(Mutex::new(Camera::build(1.into(), TOPIC_CAMERA_FRONT)));
                 let radar_act = Arc::new(Mutex::new(Radar::build(2.into(), TOPIC_RADAR_FRONT)));
 
-                let mut acts = Vec::new();
-                acts.push(activity_into_invokes(&cam_act));
-                acts.push(activity_into_invokes(&radar_act));
+                let acts = vec![
+                    activity_into_invokes(&cam_act),
+                    activity_into_invokes(&radar_act),
+                ];
 
                 let mut agent = LocalFeoAgent::new(acts, PRIMARY_NAME);
                 let mut program = agent.create_program();

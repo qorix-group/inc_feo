@@ -77,9 +77,10 @@ async fn primary_agent_program() {
     let cam_act = Arc::new(Mutex::new(Camera::build(1.into(), TOPIC_CAMERA_FRONT)));
     let radar_act = Arc::new(Mutex::new(Radar::build(2.into(), TOPIC_RADAR_FRONT)));
 
-    let mut acts = Vec::new();
-    acts.push(activity_into_invokes(&cam_act));
-    acts.push(activity_into_invokes(&radar_act));
+    let acts = vec![
+        activity_into_invokes(&cam_act),
+        activity_into_invokes(&radar_act),
+    ];
 
     let mut agent = LocalFeoAgent::new(acts, PRIMARY_NAME);
     let mut program = agent.create_program();
@@ -102,9 +103,10 @@ async fn secondary_1_agent_program() {
         TOPIC_INFERRED_SCENE,
     )));
 
-    let mut acts = Vec::new();
-    acts.push(activity_into_invokes(&neural_net_act));
-    acts.push(activity_into_invokes(&environ_renderer_act));
+    let acts = vec![
+        activity_into_invokes(&neural_net_act),
+        activity_into_invokes(&environ_renderer_act),
+    ];
 
     let mut agent = LocalFeoAgent::new(acts, SECONDARY1_NAME);
     let mut program = agent.create_program();
@@ -135,11 +137,12 @@ async fn secondary_2_agent_program() {
         TOPIC_CONTROL_STEERING,
     )));
 
-    let mut acts = Vec::new();
-    acts.push(activity_into_invokes(&emg_brk_act));
-    acts.push(activity_into_invokes(&brk_ctr_act));
-    acts.push(activity_into_invokes(&lane_asst_act));
-    acts.push(activity_into_invokes(&str_ctr_act));
+    let acts = vec![
+        activity_into_invokes(&emg_brk_act),
+        activity_into_invokes(&brk_ctr_act),
+        activity_into_invokes(&lane_asst_act),
+        activity_into_invokes(&str_ctr_act),
+    ];
 
     let mut agent = LocalFeoAgent::new(acts, SECONDARY2_NAME);
     let mut program = agent.create_program();
