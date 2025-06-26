@@ -117,7 +117,9 @@ where
             .unwrap_or_else(|e| panic!("failed to open subscriber for topic {topic}: {e}"))
             .publisher_builder()
             .create()
-            .unwrap_or_else(|_| panic!("failed to create subscriber for topic {topic}"));
+            .unwrap_or_else(|e| {
+                panic!("failed to create subscriber for topic {topic} with err {e:?}")
+            });
         Self { publisher }
     }
 }

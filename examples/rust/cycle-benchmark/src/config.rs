@@ -56,7 +56,7 @@ pub struct ApplicationConfig {
     /// Dependencies of activities
     ///
     /// For each activity id, a list of ids of activities it depends on
-    activity_deps: ActivityDependencies,
+    pub activity_deps: ActivityDependencies,
     /// Chains of activities to be put into CompositeActivities
     ///
     /// IDs of composite activities mapped to a sequence of contained activities.
@@ -71,6 +71,7 @@ pub enum SignallingType {
     DirectUnix,
     RelayedTcp,
     RelayedUnix,
+    OrchestrationEvent,
 }
 
 impl ApplicationConfig {
@@ -244,12 +245,10 @@ impl ApplicationConfig {
 }
 
 fn application_config() -> ApplicationConfig {
-    let config_file = Path::new(file!())
-        .parent()
-        .unwrap()
-        .join(CONFIG_PATH)
-        .canonicalize()
-        .unwrap();
+    let x = Path::new(file!()).parent().unwrap().join(CONFIG_PATH);
+    println!("Using config file: {}", x.display());
+
+    let config_file = x.canonicalize().unwrap();
     info!("Reading configuration from {}", config_file.display());
 
     let file =

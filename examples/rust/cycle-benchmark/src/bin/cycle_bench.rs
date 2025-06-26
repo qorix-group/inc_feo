@@ -2,11 +2,18 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
+
+use async_runtime::runtime::async_runtime::AsyncRuntimeBuilder;
+use async_runtime::scheduler::execution_engine::ExecutionEngineBuilder;
 use cycle_benchmark::config::{ApplicationConfig, SignallingType};
-use feo::ids::AgentId;
+use feo::ids::{ActivityId, AgentId};
+use feo::orch_adapter::runtime_adapters::{ActivityDetailsBuilder, FeoRunner};
 use feo::recording::recorder::RecordingRules;
 use feo::recording::registry::TypeRegistry;
 use feo_time::Duration;
+use logging_tracing::TracingLibraryBuilder;
+use tracing::Level;
 
 const DEFAULT_FEO_CYCLE_TIME: Duration = Duration::from_millis(5);
 
@@ -40,6 +47,10 @@ fn run_as_primary(params: Params, app_config: ApplicationConfig) {
     );
 
     match signalling {
+        SignallingType::OrchestrationEvent => {
+            let should_bind_activities_to_threads = true;
+            run_orch_primary(params, app_config, should_bind_activities_to_threads);
+        }
         SignallingType::DirectMpsc => {
             let config = direct_mpsc::make_primary_config(params, app_config);
             direct_mpsc::Primary::new(config).run().unwrap();
@@ -53,6 +64,172 @@ fn run_as_primary(params: Params, app_config: ApplicationConfig) {
             relayed_sockets::Primary::new(config).run().unwrap();
         }
     }
+}
+
+fn run_orch_primary(params: Params, config: ApplicationConfig, activities_bound_to_threads: bool) {
+    let mut logger = TracingLibraryBuilder::new()
+        .global_log_level(Level::TRACE)
+        // .enable_tracing(TraceScope::AppScope)
+        // .enable_logging(true)
+        .build();
+
+    logger.init_log_trace();
+
+    let workers_count = config
+        .agent_assignments()
+        .get(&params.agent_id)
+        .unwrap()
+        .len()
+        + 1;
+
+    let (builder, _engine_id) = AsyncRuntimeBuilder::new().with_engine(
+        ExecutionEngineBuilder::new()
+            .task_queue_size(256)
+            .workers(workers_count)
+            .with_dedicated_worker("500".into())
+            .with_dedicated_worker("501".into())
+            .with_dedicated_worker("502".into()),
+    );
+
+    let mut runtime = builder.build().unwrap();
+
+    const PRIMARY_AGENT_NAME: &str = "primary_agent";
+    const SECONDARY_AGENT_NAME: &str = "secondary_agent";
+
+    let agents: Vec<String>;
+    if config.agent_assignments().len() > 1 {
+        // Only one primary and one secondary agent is supported in this benchmark
+        agents = vec![
+            PRIMARY_AGENT_NAME.to_string(),
+            SECONDARY_AGENT_NAME.to_string(),
+        ];
+    } else {
+        agents = vec![PRIMARY_AGENT_NAME.to_string()];
+    }
+
+    let mut activities = ActivityDetailsBuilder::new("primary_agent_design");
+
+    let mut i = 1;
+
+    let mut activity_to_agent: HashMap<ActivityId, &'static str> = HashMap::new();
+
+    // Build and add the activities of primary agent worker(s)
+    // and map all activity ids of all agents to either primary or secondary agent
+    for agent in config.worker_assignments().iter() {
+        for worker in agent.1 {
+            for activity in &worker.1 {
+                if agent.0 == &params.agent_id {
+                    if activities_bound_to_threads {
+                        activities = activities.add_bounded_activity(
+                            || {
+                                cycle_benchmark::activities::DummyActivity::build_orch(
+                                    activity.0,
+                                    Duration::from_micros(i),
+                                )
+                            },
+                            worker.0.id().to_string().into(),
+                        );
+                    } else {
+                        activities = activities.add_activity(|| {
+                            cycle_benchmark::activities::DummyActivity::build_orch(
+                                activity.0,
+                                Duration::from_micros(i),
+                            )
+                        });
+                    }
+                    activity_to_agent.insert(activity.0, PRIMARY_AGENT_NAME);
+                    i += 1;
+                } else {
+                    activity_to_agent.insert(activity.0, SECONDARY_AGENT_NAME);
+                }
+            }
+        }
+    }
+
+    let mut runner = FeoRunner::new("testapp");
+
+    runner.add_agent(activities, PRIMARY_AGENT_NAME);
+
+    runner.with_executor(agents, config.activity_deps, activity_to_agent);
+
+    runner.run(&mut runtime, params.feo_cycle_time);
+}
+
+fn run_orch_secondary(
+    params: Params,
+    config: ApplicationConfig,
+    activities_bound_to_threads: bool,
+) {
+    let mut logger = TracingLibraryBuilder::new()
+        .global_log_level(Level::TRACE)
+        // .enable_tracing(TraceScope::AppScope)
+        // .enable_logging(true)
+        .build();
+
+    logger.init_log_trace();
+
+    let workers_count = config
+        .agent_assignments()
+        .get(&params.agent_id)
+        .unwrap()
+        .len()
+        + 1;
+
+    let (builder, _engine_id) = AsyncRuntimeBuilder::new().with_engine(
+        ExecutionEngineBuilder::new()
+            .task_queue_size(256)
+            .workers(workers_count)
+            .with_dedicated_worker("500".into())
+            .with_dedicated_worker("501".into())
+            .with_dedicated_worker("502".into()),
+    );
+
+    let mut runtime = builder.build().unwrap();
+
+    const SECONDARY_AGENT_NAME: &str = "secondary_agent";
+
+    let mut activities = ActivityDetailsBuilder::new("secondary_agent_design");
+
+    let mut i = 1;
+
+    let mut activity_to_agent: HashMap<ActivityId, &'static str> = HashMap::new();
+
+    // Build and add the activities of secondary agent worker(s)
+    // and map all activity ids to secondary agent
+    for agent in config.worker_assignments().iter() {
+        for worker in agent.1 {
+            for activity in &worker.1 {
+                if agent.0 == &params.agent_id {
+                    if activities_bound_to_threads {
+                        activities = activities.add_bounded_activity(
+                            || {
+                                cycle_benchmark::activities::DummyActivity::build_orch(
+                                    activity.0,
+                                    Duration::from_micros(i),
+                                )
+                            },
+                            worker.0.id().to_string().into(),
+                        );
+                    } else {
+                        activities = activities.add_activity(|| {
+                            cycle_benchmark::activities::DummyActivity::build_orch(
+                                activity.0,
+                                Duration::from_micros(i),
+                            )
+                        });
+                    }
+                    activity_to_agent.insert(activity.0, SECONDARY_AGENT_NAME);
+                    i += 1;
+                }
+            }
+        }
+    }
+
+    let mut runner = FeoRunner::new("testapp");
+
+    runner.add_agent(activities, SECONDARY_AGENT_NAME);
+
+    runner.run(&mut runtime, params.feo_cycle_time);
 }
 
 fn run_as_secondary(params: Params, app_config: ApplicationConfig) {
@@ -74,6 +251,10 @@ fn run_as_secondary(params: Params, app_config: ApplicationConfig) {
         signalling @ SignallingType::RelayedTcp | signalling @ SignallingType::RelayedUnix => {
             let config = relayed_sockets::make_secondary_config(params, app_config, signalling);
             relayed_sockets::Secondary::new(config).run();
+        }
+        SignallingType::OrchestrationEvent => {
+            let should_bind_activities_to_threads = true;
+            run_orch_secondary(params, app_config, should_bind_activities_to_threads);
         }
     }
 }
@@ -106,6 +287,10 @@ fn run_as_recorder(params: Params, app_config: ApplicationConfig) {
                 params, app_config, &registry, rules, signalling,
             );
             relayed_sockets::Recorder::new(config).run();
+        }
+        SignallingType::OrchestrationEvent => {
+            eprintln!("ERROR: OrchestrationEvent signalling does not support recorders");
+            std::process::exit(1);
         }
     }
 }

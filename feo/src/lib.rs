@@ -37,6 +37,7 @@ pub mod agent;
 pub mod cpp;
 pub mod error;
 pub mod ids;
+pub mod orch_adapter;
 #[cfg(feature = "recording")]
 pub mod recording;
 pub mod scheduler;

@@ -38,6 +38,12 @@ pub const TOPIC_RADAR_FRONT: &str = "feo/com/vehicle/radar/front";
 /// Allow up to two recorder processes (that potentially need to subscribe to every topic)
 pub const MAX_ADDITIONAL_SUBSCRIBERS: usize = 2;
 
+pub const APPLICATION_NAME: &str = "mini-adas";
+
+pub const PRIMARY_SECONDARY_NAME: &str = "mini-adasp";
+pub const SECONDARY1_NAME: &str = "mini-adas1";
+pub const SECONDARY2_NAME: &str = "mini-adas2";
+
 pub fn socket_paths() -> (PathBuf, PathBuf) {
     (
         Path::new("/tmp/feo_listener1.socket").to_owned(),
@@ -157,13 +163,13 @@ pub fn activity_dependencies() -> ActivityDependencies {
         // EmergencyBraking
         (4.into(), vec![2.into()]),
         // LaneAssist
-        (5.into(), vec![2.into()]),
+        // (5.into(), vec![2.into()]),
         // BrakeController
         (6.into(), vec![4.into()]),
         // SteeringController
-        (7.into(), vec![5.into()]),
+        (7.into(), vec![2.into()]),
         // TrajectoryVisualizer
-        (8.into(), vec![5.into()]),
+        // (8.into(), vec![5.into()]),
     ];
 
     dependencies.into()

@@ -169,8 +169,7 @@ impl ProtocolMultiSender {
             .get(&channel_id)
             .ok_or(Error::ChannelNotFound(channel_id))?;
         sender
-            .sender
-            .send(signal)
+            .send_stub(signal)
             .map_err(|_| Error::Channel("channel closed"))
     }
 
@@ -187,4 +186,14 @@ impl ProtocolMultiSender {
 pub(crate) enum ProtocolSignal {
     Core(Signal),
     Connect(ChannelId),
+}
+
+pub trait Measure {
+    fn is_step(&self) -> bool;
+}
+
+impl Measure for ProtocolSignal {
+    fn is_step(&self) -> bool {
+        matches!(self, ProtocolSignal::Core(Signal::Step(_)))
+    }
 }

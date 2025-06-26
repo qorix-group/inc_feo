@@ -40,6 +40,8 @@ pub struct Primary {
     _worker_threads: Vec<JoinHandle<()>>,
 }
 
+// use crate::signalling::common::mpsc::primitives::dropppp;
+
 impl Primary {
     /// Create a new instance
     pub fn new(config: PrimaryConfig) -> Self {
@@ -106,6 +108,8 @@ impl Primary {
 
         // TODO: Bubble up errors
         self.scheduler.run();
+
+        // dropppp();
 
         Ok(())
     }

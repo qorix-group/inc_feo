@@ -14,6 +14,11 @@ postcard = { workspace = true, features = [
     "experimental-derive",
 ], optional = true }
 serde = { workspace = true, optional = true }
+async_runtime = { workspace = true }
+orchestration = { workspace = true }
+logging_tracing = { workspace = true }
+foundation = { workspace = true }
+
 
 [dev-dependencies]
 feo-logger = { workspace = true }

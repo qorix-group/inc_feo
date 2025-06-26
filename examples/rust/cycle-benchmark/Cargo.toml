@@ -18,6 +18,11 @@ tracing = { workspace = true }
 postcard = { workspace = true, features = ["experimental-derive"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
+async_runtime = { workspace = true }
+orchestration = { workspace = true }
+logging_tracing = { workspace = true }
+foundation = { workspace = true }
+
 
 [build-dependencies]
 

@@ -10,6 +10,7 @@ use core::ops::{Deref, DerefMut, Range};
 use core::time::Duration;
 use feo::activity::Activity;
 use feo::ids::ActivityId;
+use feo::orch_adapter::types::ActivityAdapterTrait;
 use feo_com::interface::{ActivityInput, ActivityOutput};
 #[cfg(feature = "com_iox2")]
 use feo_com::iox2::{Iox2Input, Iox2Output};
@@ -18,6 +19,7 @@ use feo_com::linux_shm::{LinuxShmInput, LinuxShmOutput};
 use feo_log::debug;
 use feo_tracing::{instrument, tracing};
 use std::hash::RandomState;
+use std::sync::{Arc, Mutex};
 use std::thread;
 
 const SLEEP_RANGE: Range<i64> = 10..45;
@@ -47,6 +49,16 @@ impl Camera {
             num_cars: 10,
             distance_obstacle: 40.0,
         })
+    }
+
+    pub fn build_orch(activity_id: ActivityId, image_topic: &str) -> Self {
+        Self {
+            activity_id,
+            output_image: activity_output(image_topic),
+            num_people: 4,
+            num_cars: 10,
+            distance_obstacle: 40.0,
+        }
     }
 
     fn get_image(&mut self) -> CameraImage {
@@ -92,6 +104,36 @@ impl Activity for Camera {
     fn shutdown(&mut self) {}
 }
 
+unsafe impl Send for Camera {}
+
+impl ActivityAdapterTrait for Camera {
+    type T = Self;
+
+    fn step_runtime(
+        instance: std::sync::Arc<std::sync::Mutex<Self::T>>,
+    ) -> impl std::future::Future<Output = orchestration::actions::invoke::InvokeResult> + Send
+    {
+        async move {
+            instance.lock().unwrap().step();
+            Ok(())
+        }
+    }
+
+    fn start(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.startup();
+        Ok(())
+    }
+
+    fn stop(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.shutdown();
+        Ok(())
+    }
+
+    fn get_act_id(&self) -> ActivityId {
+        self.activity_id
+    }
+}
+
 /// Radar activity
 ///
 /// This component emulates are radar generating a [RadarScan].
@@ -113,6 +155,14 @@ impl Radar {
             output_scan: activity_output(radar_topic),
             distance_obstacle: 40.0,
         })
+    }
+
+    pub fn build_orch(activity_id: ActivityId, radar_topic: &str) -> Self {
+        Self {
+            activity_id,
+            output_scan: activity_output(radar_topic),
+            distance_obstacle: 40.0,
+        }
     }
 
     fn get_scan(&mut self) -> RadarScan {
@@ -155,6 +205,36 @@ impl Activity for Radar {
     fn shutdown(&mut self) {}
 }
 
+unsafe impl Send for Radar {}
+
+impl ActivityAdapterTrait for Radar {
+    type T = Self;
+
+    fn step_runtime(
+        instance: std::sync::Arc<std::sync::Mutex<Self::T>>,
+    ) -> impl std::future::Future<Output = orchestration::actions::invoke::InvokeResult> + Send
+    {
+        async move {
+            instance.lock().unwrap().step();
+            Ok(())
+        }
+    }
+
+    fn start(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.startup();
+        Ok(())
+    }
+
+    fn stop(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.shutdown();
+        Ok(())
+    }
+
+    fn get_act_id(&self) -> ActivityId {
+        self.activity_id
+    }
+}
+
 /// Neural network activity
 ///
 /// This component emulates a neural network
@@ -185,6 +265,20 @@ impl NeuralNet {
             input_scan: activity_input(scan_topic),
             output_scene: activity_output(scene_topic),
         })
+    }
+
+    pub fn build_orch(
+        activity_id: ActivityId,
+        image_topic: &str,
+        scan_topic: &str,
+        scene_topic: &str,
+    ) -> Self {
+        Self {
+            activity_id,
+            input_image: activity_input(image_topic),
+            input_scan: activity_input(scan_topic),
+            output_scene: activity_output(scene_topic),
+        }
     }
 
     fn infer(image: &CameraImage, radar: &RadarScan, scene: &mut MaybeUninit<Scene>) {
@@ -245,6 +339,36 @@ impl Activity for NeuralNet {
     fn shutdown(&mut self) {}
 }
 
+unsafe impl Send for NeuralNet {}
+
+impl ActivityAdapterTrait for NeuralNet {
+    type T = Self;
+
+    fn step_runtime(
+        instance: std::sync::Arc<std::sync::Mutex<Self::T>>,
+    ) -> impl std::future::Future<Output = orchestration::actions::invoke::InvokeResult> + Send
+    {
+        async move {
+            instance.lock().unwrap().step();
+            Ok(())
+        }
+    }
+
+    fn start(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.startup();
+        Ok(())
+    }
+
+    fn stop(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.shutdown();
+        Ok(())
+    }
+
+    fn get_act_id(&self) -> ActivityId {
+        self.activity_id
+    }
+}
+
 /// Emergency braking activity
 ///
 /// This component emulates an emergency braking function
@@ -272,6 +396,18 @@ impl EmergencyBraking {
             input_scene: activity_input(scene_topic),
             output_brake_instruction: activity_output(brake_instruction_topic),
         })
+    }
+
+    pub fn build_orch(
+        activity_id: ActivityId,
+        scene_topic: &str,
+        brake_instruction_topic: &str,
+    ) -> Self {
+        Self {
+            activity_id,
+            input_scene: activity_input(scene_topic),
+            output_brake_instruction: activity_output(brake_instruction_topic),
+        }
     }
 }
 
@@ -322,6 +458,36 @@ impl Activity for EmergencyBraking {
     fn shutdown(&mut self) {}
 }
 
+unsafe impl Send for EmergencyBraking {}
+
+impl ActivityAdapterTrait for EmergencyBraking {
+    type T = Self;
+
+    fn step_runtime(
+        instance: std::sync::Arc<std::sync::Mutex<Self::T>>,
+    ) -> impl std::future::Future<Output = orchestration::actions::invoke::InvokeResult> + Send
+    {
+        async move {
+            instance.lock().unwrap().step();
+            Ok(())
+        }
+    }
+
+    fn start(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.startup();
+        Ok(())
+    }
+
+    fn stop(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.shutdown();
+        Ok(())
+    }
+
+    fn get_act_id(&self) -> ActivityId {
+        self.activity_id
+    }
+}
+
 /// Brake controller activity
 ///
 /// This component emulates a brake controller
@@ -342,6 +508,12 @@ impl BrakeController {
             activity_id,
             input_brake_instruction: activity_input(brake_instruction_topic),
         })
+    }
+    pub fn build_orch(activity_id: ActivityId, brake_instruction_topic: &str) -> Self {
+        Self {
+            activity_id,
+            input_brake_instruction: activity_input(brake_instruction_topic),
+        }
     }
 }
 
@@ -372,6 +544,36 @@ impl Activity for BrakeController {
     fn shutdown(&mut self) {}
 }
 
+unsafe impl Send for BrakeController {}
+
+impl ActivityAdapterTrait for BrakeController {
+    type T = Self;
+
+    fn step_runtime(
+        instance: std::sync::Arc<std::sync::Mutex<Self::T>>,
+    ) -> impl std::future::Future<Output = orchestration::actions::invoke::InvokeResult> + Send
+    {
+        async move {
+            instance.lock().unwrap().step();
+            Ok(())
+        }
+    }
+
+    fn start(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.startup();
+        Ok(())
+    }
+
+    fn stop(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.shutdown();
+        Ok(())
+    }
+
+    fn get_act_id(&self) -> ActivityId {
+        self.activity_id
+    }
+}
+
 /// Environment renderer activity
 ///
 /// This component emulates a renderer to display a scene
@@ -391,6 +593,13 @@ impl EnvironmentRenderer {
             activity_id,
             input_scene: activity_input(scene_topic),
         })
+    }
+
+    pub fn build_orch(activity_id: ActivityId, scene_topic: &str) -> Self {
+        Self {
+            activity_id,
+            input_scene: activity_input(scene_topic),
+        }
     }
 }
 
@@ -416,6 +625,36 @@ impl Activity for EnvironmentRenderer {
     fn shutdown(&mut self) {}
 }
 
+unsafe impl Send for EnvironmentRenderer {}
+
+impl ActivityAdapterTrait for EnvironmentRenderer {
+    type T = Self;
+
+    fn step_runtime(
+        instance: std::sync::Arc<std::sync::Mutex<Self::T>>,
+    ) -> impl std::future::Future<Output = orchestration::actions::invoke::InvokeResult> + Send
+    {
+        async move {
+            instance.lock().unwrap().step();
+            Ok(())
+        }
+    }
+
+    fn start(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.startup();
+        Ok(())
+    }
+
+    fn stop(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.shutdown();
+        Ok(())
+    }
+
+    fn get_act_id(&self) -> ActivityId {
+        self.activity_id
+    }
+}
+
 /// Steering controller activity
 ///
 /// This component emulates a steering controller
@@ -436,6 +675,13 @@ impl SteeringController {
             activity_id,
             input_steering: activity_input(steering_topic),
         })
+    }
+
+    pub fn build_orch(activity_id: ActivityId, steering_topic: &str) -> Self {
+        Self {
+            activity_id,
+            input_steering: activity_input(steering_topic),
+        }
     }
 }
 
@@ -462,6 +708,36 @@ impl Activity for SteeringController {
 
     #[instrument(name = "SteeringController shutdown")]
     fn shutdown(&mut self) {}
+}
+
+unsafe impl Send for SteeringController {}
+
+impl ActivityAdapterTrait for SteeringController {
+    type T = Self;
+
+    fn step_runtime(
+        instance: std::sync::Arc<std::sync::Mutex<Self::T>>,
+    ) -> impl std::future::Future<Output = orchestration::actions::invoke::InvokeResult> + Send
+    {
+        async move {
+            instance.lock().unwrap().step();
+            Ok(())
+        }
+    }
+
+    fn start(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.startup();
+        Ok(())
+    }
+
+    fn stop(&mut self) -> orchestration::actions::invoke::InvokeResult {
+        self.shutdown();
+        Ok(())
+    }
+
+    fn get_act_id(&self) -> ActivityId {
+        self.activity_id
+    }
 }
 
 /// Create an activity input.

@@ -14,7 +14,7 @@ use alloc::vec::Vec;
 use feo_log::{debug, error, info, trace};
 use feo_time::Instant;
 use std::collections::HashMap;
-use std::thread;
+use std::{println, thread};
 
 /// Global activity scheduler
 ///
@@ -105,8 +105,10 @@ impl Scheduler {
                 .expect("failed while waiting for ready signal");
         }
 
+        let mut iter = 0;
         // Loop the FEO task chain
-        loop {
+        while iter < 30000 {
+            iter += 1;
             let task_chain_start = Instant::now();
 
             // Record start of task chain on registered recorders
@@ -152,6 +154,7 @@ impl Scheduler {
                 debug!(
                     "Finished task chain after {task_chain_duration:?}. Sleeping for {time_left:?}"
                 );
+
                 thread::sleep(time_left);
             }
         }
@@ -200,6 +203,7 @@ impl Scheduler {
     ) -> Result<(), Error> {
         debug!("Triggering step for activity {}", id);
         let signal = Signal::Step((*id, timestamp()));
+        // println!("Sending Step signal: {:?}", signal);
         Self::trigger_activity(id, &signal, recorder_ids, connector)
     }
 
@@ -212,6 +216,7 @@ impl Scheduler {
     ) -> Result<(), Error> {
         debug!("Triggering shutdown for activity {}", id);
         let signal = Signal::Shutdown((*id, timestamp()));
+
         Self::trigger_activity(id, &signal, recorder_ids, connector)
     }
 

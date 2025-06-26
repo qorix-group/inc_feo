@@ -13,7 +13,10 @@ use feo_log::{info, LevelFilter};
 use feo_time::Duration;
 use logging_tracing::{TraceScope, TracingLibraryBuilder};
 
-use mini_adas::activities::{activities_to_agents_assigment, primary_agent_activities};
+use mini_adas::activities::{
+    activities_to_agents_assigment, primary_agent_activities, secondary1_agent_activities,
+    secondary2_agent_activities,
+};
 use mini_adas::config::{
     activity_dependencies, agent_assignments_ids, topic_dependencies, APPLICATION_NAME,
     COM_BACKEND, MAX_ADDITIONAL_SUBSCRIBERS, PRIMARY_SECONDARY_NAME, SECONDARY1_NAME,
@@ -22,12 +25,9 @@ use mini_adas::config::{
 use std::collections::HashSet;
 
 const AGENT_ID: AgentId = AgentId::new(100);
-const DEFAULT_FEO_CYCLE_TIME: Duration = Duration::from_secs(1);
+const DEFAULT_FEO_CYCLE_TIME: Duration = Duration::from_secs(5);
 
 fn main() {
-    // feo_logger::init(LevelFilter::Debug, true, true);
-    // feo_tracing::init(feo_tracing::LevelFilter::TRACE);
-
     let params = Params::from_args();
 
     info!("Starting primary agent {AGENT_ID}");
@@ -70,6 +70,8 @@ fn main() {
     let mut runner = FeoRunner::new(APPLICATION_NAME);
 
     runner.add_agent(primary_agent_activities(), PRIMARY_SECONDARY_NAME);
+    runner.add_agent(secondary1_agent_activities(), SECONDARY1_NAME);
+    runner.add_agent(secondary2_agent_activities(), SECONDARY2_NAME);
 
     runner.with_executor(
         agents,

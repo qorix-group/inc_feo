@@ -143,6 +143,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "async_runtime"
+version = "0.1.0"
+dependencies = [
+ "foundation",
+ "iceoryx2-bb-container 0.6.1",
+ "iceoryx2-bb-posix 0.6.1",
+ "iceoryx2-pal-concurrency-sync 0.6.1",
+ "loom",
+]
+
+[[package]]
 name = "atomic-polyfill"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -225,6 +236,8 @@ version = "1.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8293772165d9345bdaaa39b45b2109591e63fe5e6fbc23c6ff930a048aa310b"
 dependencies = [
+ "jobserver",
+ "libc",
  "shlex",
 ]
 
@@ -271,10 +284,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "clap"
+version = "4.5.40"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "40b6887a1d8685cebccf115538db5c0efe625ccac9696ad45c409d96566e910f"
+dependencies = [
+ "clap_builder",
+]
+
+[[package]]
+name = "clap_builder"
+version = "4.5.40"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0c66c08ce9f0c698cbce5c0279d0bb6ac936d8674174fe48f736533b964f59e"
+dependencies = [
+ "anstyle",
+ "clap_lex",
+ "strsim",
+]
+
+[[package]]
+name = "clap_lex"
+version = "0.7.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b94f61472cee1439c0b966b47e3aca9ae07e45d070759512cd390ea2bebc6675"
+
+[[package]]
 name = "cobs"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67ba02a97a2bd10f4b59b25c7973101c79642302776489e030cd13cdab09ed15"
+
+[[package]]
+name = "codespan-reporting"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe6d2e5af09e8c8ad56c969f2157a3d4238cebc7c55f0a517728c38f7b200f81"
+dependencies = [
+ "serde",
+ "termcolor",
+ "unicode-width",
+]
 
 [[package]]
 name = "colorchoice"
@@ -302,18 +352,110 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "790eea4361631c5e7d22598ecd5723ff611904e3344ce8720784c93e3d83d40b"
 
 [[package]]
+name = "crossbeam-channel"
+version = "0.5.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82b8f8f868b36967f9606790d1903570de9ceaf870a7bf9fbbd3016d636a2cb2"
+dependencies = [
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-utils"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
+
+[[package]]
+name = "cxx"
+version = "1.0.158"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a71ea7f29c73f7ffa64c50b83c9fe4d3a6d4be89a86b009eb80d5a6d3429d741"
+dependencies = [
+ "cc",
+ "cxxbridge-cmd",
+ "cxxbridge-flags",
+ "cxxbridge-macro",
+ "foldhash",
+ "link-cplusplus",
+]
+
+[[package]]
+name = "cxx-build"
+version = "1.0.158"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36a8232661d66dcf713394726157d3cfe0a89bfc85f52d6e9f9bbc2306797fe7"
+dependencies = [
+ "cc",
+ "codespan-reporting",
+ "proc-macro2",
+ "quote",
+ "scratch",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "cxxbridge-cmd"
+version = "1.0.158"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f44296c8693e9ea226a48f6a122727f77aa9e9e338380cb021accaeeb7ee279"
+dependencies = [
+ "clap",
+ "codespan-reporting",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "cxxbridge-flags"
+version = "1.0.158"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c42f69c181c176981ae44ba9876e2ea41ce8e574c296b38d06925ce9214fb8e4"
+
+[[package]]
+name = "cxxbridge-macro"
+version = "1.0.158"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8faff5d4467e0709448187df29ccbf3b0982cc426ee444a193f87b11afb565a8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rustversion",
+ "syn 2.0.96",
+]
+
+[[package]]
 name = "cycle-benchmark"
 version = "0.1.0"
 dependencies = [
+ "async_runtime",
  "feo",
  "feo-log",
  "feo-logger",
  "feo-time",
  "feo-tracing",
+ "foundation",
+ "logging_tracing",
+ "orchestration",
  "postcard",
  "serde",
  "serde_json",
  "tracing",
+]
+
+[[package]]
+name = "dashmap"
+version = "6.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5041cc499144891f3790297212f32a74fb938e5136a14943f338ef9e0ae276cf"
+dependencies = [
+ "cfg-if",
+ "crossbeam-utils",
+ "hashbrown 0.14.5",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core",
 ]
 
 [[package]]
@@ -407,13 +549,17 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 name = "feo"
 version = "0.0.1"
 dependencies = [
+ "async_runtime",
  "feo-com",
  "feo-log",
  "feo-logger",
  "feo-time",
  "feo-tracing",
+ "foundation",
  "libc",
+ "logging_tracing",
  "mio",
+ "orchestration",
  "postcard",
  "serde",
 ]
@@ -423,7 +569,7 @@ name = "feo-com"
 version = "0.1.0"
 dependencies = [
  "feo-log",
- "iceoryx2",
+ "iceoryx2 0.5.0",
  "nix",
  "rand",
 ]
@@ -515,6 +661,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 
 [[package]]
+name = "foldhash"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
+
+[[package]]
+name = "foundation"
+version = "0.1.0"
+dependencies = [
+ "iceoryx2-bb-container 0.6.1",
+ "iceoryx2-bb-derive-macros 0.6.1",
+ "iceoryx2-bb-elementary 0.6.1",
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-bb-lock-free 0.6.1",
+ "iceoryx2-bb-memory 0.6.1",
+ "iceoryx2-bb-posix 0.6.1",
+ "iceoryx2-bb-system-types 0.6.1",
+ "iceoryx2-bb-testing",
+ "iceoryx2-bb-threadsafe",
+ "iceoryx2-pal-concurrency-sync 0.6.1",
+ "loom",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "futures"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -604,6 +776,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "generator"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d18470a76cb7f8ff746cf1f7470914f900252ec36bbc40b569d74b1258446827"
+dependencies = [
+ "cc",
+ "cfg-if",
+ "libc",
+ "log",
+ "rustversion",
+ "windows",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -611,7 +797,19 @@ checksum = "c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7"
 dependencies = [
  "cfg-if",
  "libc",
- "wasi",
+ "wasi 0.11.0+wasi-snapshot-preview1",
+]
+
+[[package]]
+name = "getrandom"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26145e563e54f2cadc477553f1ec5ee650b00862f0a58bcd12cbdc5f0ea2d2f4"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "r-efi",
+ "wasi 0.14.2+wasi-0.2.4",
 ]
 
 [[package]]
@@ -634,6 +832,12 @@ checksum = "b0c35f58762feb77d74ebe43bdbc3210f09be9fe6742234d573bacc26ed92b67"
 dependencies = [
  "byteorder",
 ]
+
+[[package]]
+name = "hashbrown"
+version = "0.14.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
 
 [[package]]
 name = "hashbrown"
@@ -695,19 +899,40 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12c091b5786a230240f8f2691b9d29508ed0a02c025c254abaed8bc788a66bb3"
 dependencies = [
  "cdr",
- "iceoryx2-bb-container",
- "iceoryx2-bb-derive-macros",
- "iceoryx2-bb-elementary",
- "iceoryx2-bb-lock-free",
- "iceoryx2-bb-log",
- "iceoryx2-bb-memory",
- "iceoryx2-bb-posix",
- "iceoryx2-bb-system-types",
- "iceoryx2-cal",
- "iceoryx2-pal-concurrency-sync",
+ "iceoryx2-bb-container 0.5.0",
+ "iceoryx2-bb-derive-macros 0.5.0",
+ "iceoryx2-bb-elementary 0.5.0",
+ "iceoryx2-bb-lock-free 0.5.0",
+ "iceoryx2-bb-log 0.5.0",
+ "iceoryx2-bb-memory 0.5.0",
+ "iceoryx2-bb-posix 0.5.0",
+ "iceoryx2-bb-system-types 0.5.0",
+ "iceoryx2-cal 0.5.0",
+ "iceoryx2-pal-concurrency-sync 0.5.0",
  "lazy_static",
  "serde",
  "sha1_smol",
+ "tiny-fn",
+ "toml",
+]
+
+[[package]]
+name = "iceoryx2"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-bb-container 0.6.1",
+ "iceoryx2-bb-derive-macros 0.6.1",
+ "iceoryx2-bb-elementary 0.6.1",
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-bb-lock-free 0.6.1",
+ "iceoryx2-bb-log 0.6.1",
+ "iceoryx2-bb-memory 0.6.1",
+ "iceoryx2-bb-posix 0.6.1",
+ "iceoryx2-bb-system-types 0.6.1",
+ "iceoryx2-cal 0.6.1",
+ "iceoryx2-pal-concurrency-sync 0.6.1",
+ "serde",
  "tiny-fn",
  "toml",
 ]
@@ -718,10 +943,23 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fff9d75921f8ccd3e19261d72082b52ccc4704dcdd6930efe6c17b15693ab519"
 dependencies = [
- "iceoryx2-bb-derive-macros",
- "iceoryx2-bb-elementary",
- "iceoryx2-bb-log",
- "iceoryx2-pal-concurrency-sync",
+ "iceoryx2-bb-derive-macros 0.5.0",
+ "iceoryx2-bb-elementary 0.5.0",
+ "iceoryx2-bb-log 0.5.0",
+ "iceoryx2-pal-concurrency-sync 0.5.0",
+ "serde",
+]
+
+[[package]]
+name = "iceoryx2-bb-container"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-bb-derive-macros 0.6.1",
+ "iceoryx2-bb-elementary 0.6.1",
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-bb-log 0.6.1",
+ "iceoryx2-pal-concurrency-sync 0.6.1",
  "serde",
 ]
 
@@ -731,7 +969,19 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9257482fb822946bb3028225b6807350e3f815068961ff5bf683735ce01d59a4"
 dependencies = [
- "iceoryx2-bb-elementary",
+ "iceoryx2-bb-elementary 0.5.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "iceoryx2-bb-derive-macros"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-bb-elementary 0.6.1",
+ "iceoryx2-bb-elementary-traits",
  "proc-macro2",
  "quote",
  "syn 2.0.96",
@@ -743,7 +993,24 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38aae0237ff1575a7d9672c0202e5d313e7f674a635f6aaf619d2090fb7a12c2"
 dependencies = [
- "iceoryx2-pal-concurrency-sync",
+ "iceoryx2-pal-concurrency-sync 0.5.0",
+]
+
+[[package]]
+name = "iceoryx2-bb-elementary"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-pal-concurrency-sync 0.6.1",
+]
+
+[[package]]
+name = "iceoryx2-bb-elementary-traits"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-pal-concurrency-sync 0.6.1",
 ]
 
 [[package]]
@@ -752,10 +1019,21 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ec3227a0c8b1d9e1ea4c61fa6a773e7c3b721fa3e2fd4363324f302b35ac85b"
 dependencies = [
- "iceoryx2-bb-elementary",
- "iceoryx2-bb-log",
- "iceoryx2-pal-concurrency-sync",
+ "iceoryx2-bb-elementary 0.5.0",
+ "iceoryx2-bb-log 0.5.0",
+ "iceoryx2-pal-concurrency-sync 0.5.0",
  "tiny-fn",
+]
+
+[[package]]
+name = "iceoryx2-bb-lock-free"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-bb-elementary 0.6.1",
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-bb-log 0.6.1",
+ "iceoryx2-pal-concurrency-sync 0.6.1",
 ]
 
 [[package]]
@@ -764,8 +1042,16 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07df5e6ff06cc2ffb0a86b67c7cd4be86b11264d5e83c02a52b384e2d5e6363a"
 dependencies = [
- "iceoryx2-pal-concurrency-sync",
+ "iceoryx2-pal-concurrency-sync 0.5.0",
  "termsize",
+]
+
+[[package]]
+name = "iceoryx2-bb-log"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-pal-concurrency-sync 0.6.1",
 ]
 
 [[package]]
@@ -774,13 +1060,26 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55a4ae8856404b6e7eca567004673ca39109fc70fcf387b96ca6d6d27c61f31b"
 dependencies = [
- "iceoryx2-bb-elementary",
- "iceoryx2-bb-lock-free",
- "iceoryx2-bb-log",
- "iceoryx2-bb-posix",
- "iceoryx2-pal-concurrency-sync",
+ "iceoryx2-bb-elementary 0.5.0",
+ "iceoryx2-bb-lock-free 0.5.0",
+ "iceoryx2-bb-log 0.5.0",
+ "iceoryx2-bb-posix 0.5.0",
+ "iceoryx2-pal-concurrency-sync 0.5.0",
  "lazy_static",
  "tiny-fn",
+]
+
+[[package]]
+name = "iceoryx2-bb-memory"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-bb-elementary 0.6.1",
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-bb-lock-free 0.6.1",
+ "iceoryx2-bb-log 0.6.1",
+ "iceoryx2-bb-posix 0.6.1",
+ "iceoryx2-pal-concurrency-sync 0.6.1",
 ]
 
 [[package]]
@@ -791,13 +1090,33 @@ checksum = "122ff88c452a3045a9de6db73d0429da736578f76eab75779dd0d3681de75d57"
 dependencies = [
  "bitflags",
  "enum-iterator",
- "iceoryx2-bb-container",
- "iceoryx2-bb-elementary",
- "iceoryx2-bb-log",
- "iceoryx2-bb-system-types",
- "iceoryx2-pal-concurrency-sync",
- "iceoryx2-pal-configuration",
- "iceoryx2-pal-posix",
+ "iceoryx2-bb-container 0.5.0",
+ "iceoryx2-bb-elementary 0.5.0",
+ "iceoryx2-bb-log 0.5.0",
+ "iceoryx2-bb-system-types 0.5.0",
+ "iceoryx2-pal-concurrency-sync 0.5.0",
+ "iceoryx2-pal-configuration 0.5.0",
+ "iceoryx2-pal-posix 0.5.0",
+ "lazy_static",
+ "serde",
+ "tiny-fn",
+]
+
+[[package]]
+name = "iceoryx2-bb-posix"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "enum-iterator",
+ "iceoryx2-bb-container 0.6.1",
+ "iceoryx2-bb-derive-macros 0.6.1",
+ "iceoryx2-bb-elementary 0.6.1",
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-bb-log 0.6.1",
+ "iceoryx2-bb-system-types 0.6.1",
+ "iceoryx2-pal-concurrency-sync 0.6.1",
+ "iceoryx2-pal-configuration 0.6.1",
+ "iceoryx2-pal-posix 0.6.1",
  "lazy_static",
  "serde",
  "tiny-fn",
@@ -809,11 +1128,48 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac2fb11a94823c3b9117a5e14edf16fd467794cf5391738eb2d8b7fc8e9b04fd"
 dependencies = [
- "iceoryx2-bb-container",
- "iceoryx2-bb-elementary",
- "iceoryx2-bb-log",
- "iceoryx2-pal-configuration",
+ "iceoryx2-bb-container 0.5.0",
+ "iceoryx2-bb-elementary 0.5.0",
+ "iceoryx2-bb-log 0.5.0",
+ "iceoryx2-pal-configuration 0.5.0",
  "serde",
+]
+
+[[package]]
+name = "iceoryx2-bb-system-types"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-bb-container 0.6.1",
+ "iceoryx2-bb-derive-macros 0.6.1",
+ "iceoryx2-bb-elementary 0.6.1",
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-bb-log 0.6.1",
+ "iceoryx2-pal-configuration 0.6.1",
+ "iceoryx2-pal-posix 0.6.1",
+ "serde",
+]
+
+[[package]]
+name = "iceoryx2-bb-testing"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-pal-configuration 0.6.1",
+ "iceoryx2-pal-testing",
+]
+
+[[package]]
+name = "iceoryx2-bb-threadsafe"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-bb-container 0.6.1",
+ "iceoryx2-bb-elementary 0.6.1",
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-bb-log 0.6.1",
+ "iceoryx2-bb-posix 0.6.1",
 ]
 
 [[package]]
@@ -823,17 +1179,40 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c64b8eee1d57c4336d7df7d521671d8b76c72cac16af0db651e40f8c45f0946"
 dependencies = [
  "cdr",
- "iceoryx2-bb-container",
- "iceoryx2-bb-elementary",
- "iceoryx2-bb-lock-free",
- "iceoryx2-bb-log",
- "iceoryx2-bb-memory",
- "iceoryx2-bb-posix",
- "iceoryx2-bb-system-types",
- "iceoryx2-pal-concurrency-sync",
+ "iceoryx2-bb-container 0.5.0",
+ "iceoryx2-bb-elementary 0.5.0",
+ "iceoryx2-bb-lock-free 0.5.0",
+ "iceoryx2-bb-log 0.5.0",
+ "iceoryx2-bb-memory 0.5.0",
+ "iceoryx2-bb-posix 0.5.0",
+ "iceoryx2-bb-system-types 0.5.0",
+ "iceoryx2-pal-concurrency-sync 0.5.0",
  "lazy_static",
  "once_cell",
  "ouroboros",
+ "serde",
+ "sha1_smol",
+ "tiny-fn",
+ "toml",
+]
+
+[[package]]
+name = "iceoryx2-cal"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "cdr",
+ "iceoryx2-bb-container 0.6.1",
+ "iceoryx2-bb-derive-macros 0.6.1",
+ "iceoryx2-bb-elementary 0.6.1",
+ "iceoryx2-bb-elementary-traits",
+ "iceoryx2-bb-lock-free 0.6.1",
+ "iceoryx2-bb-log 0.6.1",
+ "iceoryx2-bb-memory 0.6.1",
+ "iceoryx2-bb-posix 0.6.1",
+ "iceoryx2-bb-system-types 0.6.1",
+ "iceoryx2-pal-concurrency-sync 0.6.1",
+ "once_cell",
  "serde",
  "sha1_smol",
  "tiny-fn",
@@ -847,10 +1226,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92dc4ec7c023819c41b5a14c9ca58e8dbb86476053321decda73ac440996f35f"
 
 [[package]]
+name = "iceoryx2-pal-concurrency-sync"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+
+[[package]]
 name = "iceoryx2-pal-configuration"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d900aa8f9c5b661a9c5ddfbdc28eb87ac8c32be5375ca9b055b087d1c89c984d"
+
+[[package]]
+name = "iceoryx2-pal-configuration"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
 
 [[package]]
 name = "iceoryx2-pal-posix"
@@ -860,10 +1249,32 @@ checksum = "5789169791a6274b492561b95543e1c635285cb454d547f78e53cbc1acd9b3f5"
 dependencies = [
  "bindgen",
  "cc",
- "iceoryx2-pal-concurrency-sync",
- "iceoryx2-pal-configuration",
+ "iceoryx2-pal-concurrency-sync 0.5.0",
+ "iceoryx2-pal-configuration 0.5.0",
  "lazy_static",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "iceoryx2-pal-posix"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "bindgen",
+ "cc",
+ "iceoryx2-pal-concurrency-sync 0.6.1",
+ "iceoryx2-pal-configuration 0.6.1",
+ "lazy_static",
+ "libc",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "iceoryx2-pal-testing"
+version = "0.6.1"
+source = "git+https://github.com/qorix-group/iceoryx2.git?branch=iox2-875-base-string-fix-miri#5b8646de53f67cfb4fc34d7af5a76e65d977c51b"
+dependencies = [
+ "iceoryx2-pal-configuration 0.6.1",
 ]
 
 [[package]]
@@ -873,7 +1284,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62f822373a4fe84d4bb149bf54e584a7f4abec90e072ed49cda0edea5b95471f"
 dependencies = [
  "equivalent",
- "hashbrown",
+ "hashbrown 0.15.2",
 ]
 
 [[package]]
@@ -930,6 +1341,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d75a2a4b1b190afb6f5425f10f6a8f959d2ea0b9c2b1d79553551850539e4674"
 
 [[package]]
+name = "jobserver"
+version = "0.1.33"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38f262f097c174adebe41eb73d66ae9c06b2844fb0da69969647bbddd9b0538a"
+dependencies = [
+ "getrandom 0.3.3",
+ "libc",
+]
+
+[[package]]
 name = "js-sys"
 version = "0.3.77"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -953,9 +1374,9 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "libc"
-version = "0.2.169"
+version = "0.2.174"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a"
+checksum = "1171693293099992e19cddea4e8b849964e9846f4acee11b3948bcc337be8776"
 
 [[package]]
 name = "libloading"
@@ -965,6 +1386,15 @@ checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
  "windows-targets 0.52.6",
+]
+
+[[package]]
+name = "link-cplusplus"
+version = "1.0.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a6f6da007f968f9def0d65a05b187e2960183de70c160204ecfccf0ee330212"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -1008,6 +1438,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "logging_tracing"
+version = "0.1.0"
+dependencies = [
+ "tracing",
+ "tracing-appender",
+ "tracing-perfetto-sdk-layer",
+ "tracing-perfetto-sdk-schema",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "loom"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "419e0dc8046cb947daa77eb95ae174acfbddb7673b4151f56d1eed8e93fbfaca"
+dependencies = [
+ "cfg-if",
+ "generator",
+ "scoped-tls",
+ "serde",
+ "serde_json",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "matchers"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8263075bb86c5a1b1427b5ae862e8889656f126e9f77c484496e8b47cf5c5558"
+dependencies = [
+ "regex-automata 0.1.10",
+]
+
+[[package]]
 name = "memchr"
 version = "2.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1017,6 +1482,7 @@ checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 name = "mini-adas"
 version = "0.1.0"
 dependencies = [
+ "async_runtime",
  "feo",
  "feo-com",
  "feo-cpp-build",
@@ -1025,6 +1491,9 @@ dependencies = [
  "feo-logger",
  "feo-time",
  "feo-tracing",
+ "foundation",
+ "logging_tracing",
+ "orchestration",
  "postcard",
  "serde",
 ]
@@ -1052,7 +1521,7 @@ checksum = "2886843bf800fba2e3377cff24abf6379b4c4d5c6681eaf9ea5b0d15090450bd"
 dependencies = [
  "libc",
  "log",
- "wasi",
+ "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.52.0",
 ]
 
@@ -1085,6 +1554,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "nu-ansi-term"
+version = "0.46.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77a8165726e8236064dbb45459242600304b42a5ea24ee2948e18e023bf7ba84"
+dependencies = [
+ "overload",
+ "winapi",
+]
+
+[[package]]
 name = "num-conv"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1112,6 +1591,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 
 [[package]]
+name = "orchestration"
+version = "0.1.0"
+dependencies = [
+ "async_runtime",
+ "foundation",
+ "iceoryx2 0.6.1",
+ "iceoryx2-bb-container 0.6.1",
+ "libc",
+ "logging_tracing",
+ "loom",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "ouroboros"
 version = "0.18.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1133,6 +1627,25 @@ dependencies = [
  "proc-macro2-diagnostics",
  "quote",
  "syn 2.0.96",
+]
+
+[[package]]
+name = "overload"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
+
+[[package]]
+name = "parking_lot_core"
+version = "0.9.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc838d2a56b5b1a6c25f55575dfc605fabb63bb2365f6c2353ef9159aa69e4a5"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "redox_syscall",
+ "smallvec",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -1303,6 +1816,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "r-efi"
+version = "5.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f"
+
+[[package]]
 name = "rand"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1329,7 +1848,16 @@ version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
- "getrandom",
+ "getrandom 0.2.15",
+]
+
+[[package]]
+name = "redox_syscall"
+version = "0.5.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d04b7d0ee6b4a0207a0a7adb104d23ecb0b47d6beae7152d0fa34b692b29fd6"
+dependencies = [
+ "bitflags",
 ]
 
 [[package]]
@@ -1340,8 +1868,17 @@ checksum = "b544ef1b4eac5dc2db33ea63606ae9ffcfac26c1416a2806ae0bf5f56b201191"
 dependencies = [
  "aho-corasick",
  "memchr",
- "regex-automata",
- "regex-syntax",
+ "regex-automata 0.4.9",
+ "regex-syntax 0.8.5",
+]
+
+[[package]]
+name = "regex-automata"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c230d73fb8d8c1b9c0b3135c5142a8acee3a0558fb8db5cf1cb65f8d7862132"
+dependencies = [
+ "regex-syntax 0.6.29",
 ]
 
 [[package]]
@@ -1352,8 +1889,14 @@ checksum = "809e8dc61f6de73b46c85f4c96486310fe304c434cfa43669d7b40f711150908"
 dependencies = [
  "aho-corasick",
  "memchr",
- "regex-syntax",
+ "regex-syntax 0.8.5",
 ]
+
+[[package]]
+name = "regex-syntax"
+version = "0.6.29"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f162c6dd7b008981e4d40210aca20b4bd0f9b60ca9271061b07f78537722f2e1"
 
 [[package]]
 name = "regex-syntax"
@@ -1402,16 +1945,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustversion"
+version = "1.0.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a0d197bd2c9dc6e53b84da9556a69ba4cdfab8619eb41a8bd1cc2027a0f6b1d"
+
+[[package]]
 name = "ryu"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
 
 [[package]]
+name = "scoped-tls"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1cf6437eb19a8f4a6cc0f7dca544973b0b78843adbfeb3683d1a94a0024a294"
+
+[[package]]
 name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+
+[[package]]
+name = "scratch"
+version = "1.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f6280af86e5f559536da57a45ebc84948833b3bee313a7dd25232e09c878a52"
 
 [[package]]
 name = "semver"
@@ -1467,6 +2028,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbfa15b3dddfee50a0fff136974b3e1bde555604ba463834a7eb7deb6417705d"
 
 [[package]]
+name = "sharded-slab"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f40ca3c46823713e0d4209592e8d6e826aa57e928f09752619fc696c499637f6"
+dependencies = [
+ "lazy_static",
+]
+
+[[package]]
 name = "shlex"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1489,6 +2059,12 @@ checksum = "8f92a496fb766b417c996b9c5e57daf2f7ad3b0bebe1ccfca4856390e3d3bb67"
 dependencies = [
  "autocfg",
 ]
+
+[[package]]
+name = "smallvec"
+version = "1.15.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
 
 [[package]]
 name = "socket2"
@@ -1522,6 +2098,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
+name = "strsim"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
+
+[[package]]
 name = "syn"
 version = "1.0.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1551,10 +2133,19 @@ checksum = "9a8a559c81686f576e8cd0290cd2a24a2a9ad80c98b3478856500fcbd7acd704"
 dependencies = [
  "cfg-if",
  "fastrand",
- "getrandom",
+ "getrandom 0.2.15",
  "once_cell",
  "rustix",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "termcolor"
+version = "1.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
+dependencies = [
+ "winapi-util",
 ]
 
 [[package]]
@@ -1565,6 +2156,65 @@ checksum = "6f11ff5c25c172608d5b85e2fb43ee9a6d683a7f4ab7f96ae07b3d8b590368fd"
 dependencies = [
  "libc",
  "winapi",
+]
+
+[[package]]
+name = "thiserror"
+version = "1.0.69"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
+dependencies = [
+ "thiserror-impl 1.0.69",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
+dependencies = [
+ "thiserror-impl 2.0.12",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "1.0.69"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "thread-id"
+version = "5.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "99043e46c5a15af379c06add30d9c93a6c0e8849de00d244c4a2c417da128d80"
+dependencies = [
+ "libc",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "thread_local"
+version = "1.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f60246a4944f24f6e018aa17cdeffb7818b76356965d03b07d6a9886e8962185"
+dependencies = [
+ "cfg-if",
 ]
 
 [[package]]
@@ -1701,6 +2351,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "tracing-appender"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3566e8ce28cc0a3fe42519fc80e6b4c943cc4c8cef275620eb8dac2d3d4e06cf"
+dependencies = [
+ "crossbeam-channel",
+ "thiserror 1.0.69",
+ "time",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "tracing-attributes"
 version = "0.1.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1716,6 +2378,65 @@ name = "tracing-core"
 version = "0.1.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e672c95779cf947c5311f83787af4fa8fffd12fb27e4993211a84bdfd9610f9c"
+dependencies = [
+ "once_cell",
+ "valuable",
+]
+
+[[package]]
+name = "tracing-log"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee855f1f400bd0e5c02d150ae5de3840039a3f54b025156404e34c23c03f47c3"
+dependencies = [
+ "log",
+ "once_cell",
+ "tracing-core",
+]
+
+[[package]]
+name = "tracing-perfetto-sdk-layer"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20553a1a2a62b10b5df9439dbda832bd396f12f5f3262421e3af9ec36af4a10d"
+dependencies = [
+ "bytes",
+ "cxx",
+ "dashmap",
+ "nix",
+ "prost",
+ "thiserror 2.0.12",
+ "thread-id",
+ "thread_local",
+ "tracing",
+ "tracing-perfetto-sdk-schema",
+ "tracing-perfetto-sdk-sys",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "tracing-perfetto-sdk-schema"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dfac01ba9f65b13334fcda7a138c5c001737f8f5752d0ec143e693abec622632"
+dependencies = [
+ "anyhow",
+ "prost",
+ "prost-build",
+ "prost-types",
+]
+
+[[package]]
+name = "tracing-perfetto-sdk-sys"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "411e9d0454e66404b728263c102d4ed93262a06019f85bb7857963868e8ff018"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "cxx",
+ "cxx-build",
+]
 
 [[package]]
 name = "tracing-subscriber"
@@ -1723,7 +2444,16 @@ version = "0.3.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8189decb5ac0fa7bc8b96b7cb9b2701d60d48805aca84a238004d665fcc4008"
 dependencies = [
+ "matchers",
+ "nu-ansi-term",
+ "once_cell",
+ "regex",
+ "sharded-slab",
+ "smallvec",
+ "thread_local",
+ "tracing",
  "tracing-core",
+ "tracing-log",
 ]
 
 [[package]]
@@ -1745,6 +2475,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
+name = "valuable"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
+
+[[package]]
 name = "version_check"
 version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1755,6 +2491,15 @@ name = "wasi"
 version = "0.11.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
+
+[[package]]
+name = "wasi"
+version = "0.14.2+wasi-0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9683f9a5a998d873c0d21fcbe3c083009670149a8fab228644b8bd36b2c48cb3"
+dependencies = [
+ "wit-bindgen-rt",
+]
 
 [[package]]
 name = "wasm-bindgen"
@@ -1852,10 +2597,121 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
 
 [[package]]
+name = "winapi-util"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
+dependencies = [
+ "windows-sys 0.59.0",
+]
+
+[[package]]
 name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+
+[[package]]
+name = "windows"
+version = "0.61.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9babd3a767a4c1aef6900409f85f5d53ce2544ccdfaa86dad48c91782c6d6893"
+dependencies = [
+ "windows-collections",
+ "windows-core",
+ "windows-future",
+ "windows-link",
+ "windows-numerics",
+]
+
+[[package]]
+name = "windows-collections"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3beeceb5e5cfd9eb1d76b381630e82c4241ccd0d27f1a39ed41b2760b255c5e8"
+dependencies = [
+ "windows-core",
+]
+
+[[package]]
+name = "windows-core"
+version = "0.61.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c0fdd3ddb90610c7638aa2b3a3ab2904fb9e5cdbecc643ddb3647212781c4ae3"
+dependencies = [
+ "windows-implement",
+ "windows-interface",
+ "windows-link",
+ "windows-result",
+ "windows-strings",
+]
+
+[[package]]
+name = "windows-future"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc6a41e98427b19fe4b73c550f060b59fa592d7d686537eebf9385621bfbad8e"
+dependencies = [
+ "windows-core",
+ "windows-link",
+ "windows-threading",
+]
+
+[[package]]
+name = "windows-implement"
+version = "0.60.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a47fddd13af08290e67f4acabf4b459f647552718f683a7b415d290ac744a836"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "windows-interface"
+version = "0.59.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd9211b69f8dcdfa817bfd14bf1c97c9188afa36f4750130fcdf3f400eca9fa8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "windows-link"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e6ad25900d524eaabdbbb96d20b4311e1e7ae1699af4fb28c17ae66c80d798a"
+
+[[package]]
+name = "windows-numerics"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9150af68066c4c5c07ddc0ce30421554771e528bde427614c61038bc2c92c2b1"
+dependencies = [
+ "windows-core",
+ "windows-link",
+]
+
+[[package]]
+name = "windows-result"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56f42bd332cc6c8eac5af113fc0c1fd6a8fd2aa08a0119358686e5160d0586c6"
+dependencies = [
+ "windows-link",
+]
+
+[[package]]
+name = "windows-strings"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56e6c93f3a0c3b36176cb1327a4958a0353d5d166c2a35cb268ace15e91d3b57"
+dependencies = [
+ "windows-link",
+]
 
 [[package]]
 name = "windows-sys"
@@ -1913,6 +2769,15 @@ dependencies = [
  "windows_x86_64_gnu 0.52.6",
  "windows_x86_64_gnullvm 0.52.6",
  "windows_x86_64_msvc 0.52.6",
+]
+
+[[package]]
+name = "windows-threading"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b66463ad2e0ea3bbf808b7f1d371311c80e115c0b71d60efc142cafbcfb057a6"
+dependencies = [
+ "windows-link",
 ]
 
 [[package]]
@@ -2012,6 +2877,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8d71a593cc5c42ad7876e2c1fda56f314f3754c084128833e64f1345ff8a03a"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "wit-bindgen-rt"
+version = "0.39.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f42320e61fe2cfd34354ecb597f86f413484a798ba44a8ca1165c58d42da6c1"
+dependencies = [
+ "bitflags",
 ]
 
 [[package]]

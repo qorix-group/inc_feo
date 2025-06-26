@@ -64,6 +64,10 @@ tracing = { version = "0.1.41", features = [
     "attributes",
 ], default-features = false }
 tracing-subscriber = { version = "0.3.19", default-features = false }
+async_runtime = { path = "../inc_orchestrator_internal/src/async_runtime" }
+orchestration = { path = "../inc_orchestrator_internal/src/orchestration" }
+logging_tracing = { path = "../inc_orchestrator_internal/src/logging_tracing" }
+foundation  = { path = "../inc_orchestrator_internal/src/foundation" }
 
 [profile.profiling]
 inherits = "release"
